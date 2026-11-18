@@ -2,7 +2,7 @@
 
 Сайт, который помогает подобрать систему для вашего телефона, планшета или ПК и ведёт на **официальные** страницы загрузки.
 
-🌐 **Сайт:** https://sudo-html.github.io/Masterflashka/settings/pages
+🌐 **Сайт:** https://sudo-html-prog.github.io/Masterflashka/
 
 ## Что умеет
 
