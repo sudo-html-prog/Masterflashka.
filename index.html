@@ -1,0 +1,1276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>:root{color-scheme:light}body{margin:0}</style>
+<title>Флешка мастера</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: narrow single column like a workshop checklist; a how-to strip first, then link rows grouped by job. */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --fg:#14202b; --muted:#566474; --line:#d9e0e6;
+  --accent:#0b7a6b; --accent-fg:#ffffff; --code-bg:#e8edf1;
+  --note-bg:#fff4dc; --note-fg:#6a4a00;
+  --font-display:"Space Grotesk","Inter",system-ui,sans-serif;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1a22; --surface:#16232d; --fg:#e6edf2; --muted:#9aabb9; --line:#263643;
+  --accent:#3ec9b0; --accent-fg:#06241f; --code-bg:#0b141b; --note-bg:#2d2410; --note-fg:#f0d58a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a22; --surface:#16232d; --fg:#e6edf2; --muted:#9aabb9; --line:#263643;
+  --accent:#3ec9b0; --accent-fg:#06241f; --code-bg:#0b141b; --note-bg:#2d2410; --note-fg:#f0d58a; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(2rem,6vw,2.75rem);font-weight:700;letter-spacing:-0.02em}
+h2{font-size:1.25rem;font-weight:700}
+h3{font-size:1.02rem;font-weight:500}
+p{margin:0}
+.lead{color:var(--muted);max-width:60ch;margin-top:12px;font-size:1.05rem}
+.label{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.steps li::before{content:counter(s);font-family:var(--font-mono);color:var(--accent);font-weight:500;display:block;margin-bottom:6px}
+.steps b{display:block;font-weight:600;margin-bottom:2px}
+.steps span{color:var(--muted);font-size:.92rem}
+
+section{display:flex;flex-direction:column;gap:12px}
+.group-head{display:flex;flex-direction:column;gap:4px}
+.group-head p{color:var(--muted);font-size:.95rem}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 16px}
+.row+.row{border-top:1px solid var(--line)}
+.row p{color:var(--muted);font-size:.92rem;margin-top:2px}
+.go{display:inline-block;white-space:nowrap;text-decoration:none;font-weight:600;font-size:.9rem;
+  background:var(--accent);color:var(--accent-fg);padding:9px 14px;border-radius:8px}
+.go:hover{filter:brightness(1.08)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.note{background:var(--note-bg);color:var(--note-fg);border-radius:8px;padding:10px 14px;font-size:.92rem}
+
+.cmds{display:flex;flex-direction:column;gap:10px}
+.cmd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--code-bg);border-radius:8px;padding:10px 12px}
+.cmd small{display:block;color:var(--muted);font-size:.78rem;margin-bottom:2px}
+.cmd code{font-family:var(--font-mono);font-size:.88rem;overflow-wrap:anywhere;user-select:all}
+.copy{font:inherit;font-size:.82rem;font-weight:600;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+.sign{font-family:var(--font-mono);font-size:.95rem;color:var(--accent);font-weight:500}
+.legal{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px;max-width:64ch}
+
+.finder{display:flex;flex-direction:column;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+#searchbox{display:flex;flex-direction:column;gap:10px}
+#q{font:inherit;font-size:16px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;width:100%}
+#q:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.sugg{display:flex;flex-direction:column;gap:8px}
+.opt{font:inherit;text-align:left;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.opt span{min-width:0;overflow-wrap:anywhere}
+.opt:hover,.opt.best{border-color:var(--accent)}
+.opt small{display:block;color:var(--muted);font-size:.78rem}
+.tag{font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.hint{color:var(--muted);font-size:.85rem}
+.picked-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.chips-label{margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{font:inherit;font-weight:600;font-size:.9rem;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+#panel{display:flex;flex-direction:column;gap:12px}
+.how{margin:0;padding-left:1.2rem;color:var(--muted);font-size:.92rem;display:flex;flex-direction:column;gap:4px}
+.finder .list{background:var(--bg)}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tab{flex:1;font:inherit;font-weight:600;font-size:.95rem;color:var(--muted);background:none;border:0;border-radius:7px;padding:10px 6px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-fg)}
+.view{display:flex;flex-direction:column;gap:40px}
+details.brand{border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+details.brand summary{padding:10px 12px;cursor:pointer;font-weight:600}
+details.brand .sugg{padding:0 8px 8px}
+.quick{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.quick-btns{display:flex;flex-wrap:wrap;gap:8px}
+.quick-btns .go{flex:1 1 130px;text-align:center}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#lang{font:inherit;font-size:.85rem;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px;max-width:50%}
+.tabs{flex-wrap:wrap}
+.tab{flex:1 1 28%;font-size:.8rem;padding:10px 2px;min-width:0;overflow-wrap:anywhere}
+.wsteps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
+.wsteps li{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;font-size:.68rem;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 1px;min-width:0;overflow-wrap:anywhere}
+.wsteps li b{font-family:var(--font-mono);font-size:.95rem;font-weight:500}
+.wsteps li.on{border-color:var(--accent);color:var(--fg)}
+.wsteps li.on b{color:var(--accent)}
+.wsteps li.done b{color:var(--accent)}
+.prep{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.prep .label{margin:0}
+.prep ol{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:6px;font-size:.93rem}
+.prep .hint,.help .hint{margin:0}
+.help{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.help a{color:var(--accent);font-weight:600;font-size:.9rem}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.chk input{margin-top:.25rem;width:1.1rem;height:1.1rem;accent-color:var(--accent);flex:none}
+#hfile,#hexp{font:inherit;font-size:16px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0}
+.hbar{height:8px;background:var(--line);border-radius:999px;overflow:hidden}
+.hbar span{display:block;height:100%;width:0;background:var(--accent)}
+#hcode{font-size:.78rem}
+@media (max-width:560px){
+  .steps{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr;gap:10px}
+  .go{text-align:center}
+}
+@media (prefers-reduced-motion:no-preference){.go{transition:filter .15s}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="toprow"><div class="label" data-i18n="kicker">Для тех, кто ставит системы</div><select id="lang" aria-label="Language"><option value="ru">Русский</option><option value="en">English</option><option value="uk">Українська</option><option value="es">Español</option><option value="de">Deutsch</option><option value="fr">Français</option><option value="pt">Português</option><option value="tr">Türkçe</option><option value="zh">中文</option><option value="ar">العربية</option><option value="hi">हिन्दी</option></select></div>
+    <h1>Флешка мастера</h1>
+    <p class="lead" data-i18n="lead">Прошивки для телефонов и планшетов и образы для компьютера. Файлов здесь нет: всё качается с сайтов авторов, поэтому образ чистый, а контрольную сумму можно сверить.</p>
+  </header>
+
+  <div class="quick">
+    <h2 data-i18n="quick">Быстрое скачивание</h2>
+    <p class="hint" data-i18n="quickhint">Кнопки открывают официальные страницы загрузки, файл начинает скачиваться там.</p>
+    <div class="quick-btns">
+      <a class="go" href="https://www.microsoft.com/software-download/windows11" target="_blank" rel="noopener">Windows 11</a>
+      <a class="go" href="https://www.microsoft.com/software-download/windows10" target="_blank" rel="noopener">Windows 10</a>
+      <a class="go" href="https://ubuntu.com/download/desktop" target="_blank" rel="noopener">Ubuntu</a>
+      <a class="go" href="https://linuxmint.com/download.php" target="_blank" rel="noopener">Linux Mint</a>
+      <a class="go" href="https://github.com/ventoy/Ventoy/releases/latest" target="_blank" rel="noopener">Ventoy</a>
+      <a class="go" href="https://rufus.ie/ru/" target="_blank" rel="noopener">Rufus</a>
+      <a class="go" href="https://github.com/pbatard/Fido" target="_blank" rel="noopener">Fido</a>
+      <a class="go" href="https://download.lineageos.org/" target="_blank" rel="noopener">LineageOS</a>
+    </div>
+    <div class="label">Как скачать Windows за три шага</div>
+    <ol class="how">
+      <li>Скачайте Rufus (кнопка выше) и откройте его.</li>
+      <li>Рядом с кнопкой «ВЫБРАТЬ» нажмите стрелку и выберите «СКАЧАТЬ», затем «Скачать».</li>
+      <li>Выберите Windows 10 или 11, язык и редакцию. Rufus скачает оригинальный образ с серверов Microsoft и сразу запишет его на флешку.</li>
+    </ol>
+    <p class="hint">Прямые ссылки на файлы Windows у Microsoft временные, а выкладывать Windows у себя нельзя, поэтому все образы качаются с официальных серверов.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Device">
+    <button class="tab" role="tab" type="button" data-mode="phone" data-i18n="t_phone" aria-selected="true">Телефоны</button>
+    <button class="tab" role="tab" type="button" data-mode="tablet" data-i18n="t_tablet" aria-selected="false">Планшеты</button>
+    <button class="tab" role="tab" type="button" data-mode="pc" data-i18n="t_pc" aria-selected="false">Компьютер</button>
+    <button class="tab" role="tab" type="button" data-mode="sec" data-i18n="t_sec" aria-selected="false">Безопасность</button>
+    <button class="tab" role="tab" type="button" data-mode="tools" data-i18n="t_tools" aria-selected="false">Инструменты</button>
+  </div>
+
+  <section id="finder">
+    <div class="group-head"><h2 id="fh">Прошивка для телефона</h2><p id="fp"></p></div>
+    <div class="finder">
+      <ol class="wsteps" id="wsteps">
+        <li class="on" data-s="1"><b>1</b><span data-i18n="w1">Подготовьте</span></li>
+        <li data-s="2"><b>2</b><span data-i18n="w2">Подключите</span></li>
+        <li data-s="3"><b>3</b><span data-i18n="w3">Выберите</span></li>
+        <li data-s="4"><b>4</b><span data-i18n="w4">Прошейте</span></li>
+      </ol>
+      <div id="searchbox">
+        <div class="chips" style="margin:0"><button id="detect" class="chip" type="button" data-i18n="detect">Определить подключённое устройство</button></div>
+        <div class="chips" style="margin:0"><button id="instTools" class="chip" type="button" hidden data-i18n="instbtn">Установить adb и fastboot</button></div>
+        <p id="detectmsg" class="hint" aria-live="polite"></p>
+        <label class="label" for="q" data-i18n="model">Модель</label>
+        <input id="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Например: самсунг 25 5g">
+        <div class="chips"><button id="allbtn" class="chip" type="button" data-i18n="showall">Показать все модели</button></div>
+        <div id="sugg" class="sugg" aria-live="polite"></div>
+        <div class="label chips-label" data-i18n="notinlist">Нет вашей модели в списке</div>
+        <div id="generic" class="sugg"></div>
+        <p class="hint">В списке модели, для которых есть официальная сборка LineageOS или Ubuntu Touch. Для любого другого устройства нажмите кнопку ниже: Linux и Windows ставятся и без прошивки.</p>
+      </div>
+      <div id="picked" hidden>
+        <div class="picked-head"><div><span class="label">Выбрано</span><h3 id="pname"></h3></div><button class="chip" id="change" type="button">Изменить</button></div>
+        <div id="prep" class="prep"></div>
+        <div class="label chips-label" data-i18n="w3l">Шаг 3. Выберите, что поставить</div>
+        <div class="chips" id="chips"></div>
+        <div class="label chips-label" id="w4l" hidden data-i18n="w4l">Шаг 4. Прошивка</div>
+        <div id="panel"></div>
+        <div id="help" class="help" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="view-pc" class="view" hidden>
+  <div class="chips" style="margin:0"><button class="chip" type="button" data-scroll="pc-win">Windows</button><button class="chip" type="button" data-scroll="pc-linux">Linux</button><button class="chip" type="button" data-scroll="pc-tools">Утилиты и ремонт</button></div>
+  <ol class="steps">
+    <li><b>Поставьте Ventoy</b><span>Один раз на флешку. Дальше образы просто копируются как обычные файлы.</span></li>
+    <li><b>Скопируйте ISO</b><span>Скачайте нужные образы ниже и положите на флешку. Хватит одной на все системы.</span></li>
+    <li><b>Загрузитесь и выберите</b><span>В меню Ventoy выберите образ. Перед этим сверьте SHA256 файла.</span></li>
+  </ol>
+
+  <section id="pc-win">
+    <div class="group-head"><h2>Windows</h2><p>Официальные образы Microsoft. Без ключа система ставится и работает с ограничениями, ключ покупается отдельно.</p></div>
+    <div class="list">
+      <div class="row"><div><h3>Windows 11</h3><p>ISO и Media Creation Tool. Нужны TPM 2.0 и Secure Boot, на старых ПК проверку отключает Rufus.</p></div><a class="go" href="https://www.microsoft.com/software-download/windows11" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Windows 10</h3><p>ISO для старого железа. Поддержка Windows 10 закончилась 14 октября 2025 года, обновления выходят только по платной программе.</p></div><a class="go" href="https://www.microsoft.com/software-download/windows10" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Fido</h3><p>Скрипт от автора Rufus. Даёт прямые ссылки на официальные ISO любой версии Windows с серверов Microsoft.</p></div><a class="go" href="https://github.com/pbatard/Fido" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>UUP dump</h3><p>Собирает ISO нужной сборки из файлов, которые берёт с серверов Microsoft. Сам Windows не хранит.</p></div><a class="go" href="https://uupdump.net/" target="_blank" rel="noopener">Сайт</a></div>
+    </div>
+  </section>
+
+  <section id="pc-linux">
+    <div class="group-head"><h2>Linux</h2><p>Образы с сайтов самих дистрибутивов.</p></div>
+    <div class="list">
+      <div class="row"><div><h3>Ubuntu</h3><p>Самый ходовой выбор для рабочего стола, много инструкций.</p></div><a class="go" href="https://ubuntu.com/download/desktop" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Linux Mint</h3><p>Привычный интерфейс, проще всего для тех, кто переходит с Windows.</p></div><a class="go" href="https://linuxmint.com/download.php" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Fedora Workstation</h3><p>Свежие версии программ, часто выбирают разработчики.</p></div><a class="go" href="https://fedoraproject.org/workstation/download" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Debian</h3><p>Стабильная основа для серверов и рабочих машин.</p></div><a class="go" href="https://www.debian.org/distrib/" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Xubuntu</h3><p>Лёгкий вариант Ubuntu для слабых ПК и ноутбуков.</p></div><a class="go" href="https://xubuntu.org/download/" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Lubuntu</h3><p>Ещё легче Xubuntu, подходит для совсем старого железа.</p></div><a class="go" href="https://lubuntu.me/downloads/" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Зеркало Яндекса</h3><p>Быстрое зеркало с Ubuntu, Debian, Mint, Fedora и другими. Для России обычно самый быстрый вариант.</p></div><a class="go" href="https://mirror.yandex.ru/" target="_blank" rel="noopener">Открыть</a></div>
+      <div class="row"><div><h3>DistroWatch</h3><p>Каталог всех дистрибутивов со ссылками на их официальные сайты.</p></div><a class="go" href="https://distrowatch.com/" target="_blank" rel="noopener">Открыть</a></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="group-head"><h2>Создание флешки</h2><p>Один из двух инструментов, ставить оба не нужно.</p></div>
+    <div class="list">
+      <div class="row"><div><h3>Ventoy</h3><p>Много образов на одной флешке с меню выбора при загрузке. Основной вариант.</p></div><a class="go" href="https://www.ventoy.net/en/download.html" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>Rufus</h3><p>Одна система на флешку. Умеет обойти проверку TPM для Windows 11 на старых ПК.</p></div><a class="go" href="https://rufus.ie/ru/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>balenaEtcher</h3><p>Простая запись одного образа на флешку: выбрать файл, выбрать флешку, нажать «Flash».</p></div><a class="go" href="https://etcher.balena.io/" target="_blank" rel="noopener">Сайт</a></div>
+    </div>
+  </section>
+
+  <section id="pc-tools">
+    <div class="group-head"><h2>Диагностика и ремонт</h2><p>Образы, которые кладут на флешку рядом с системами.</p></div>
+    <div class="list">
+      <div class="row"><div><h3>GParted Live</h3><p>Разметка и восстановление разделов диска.</p></div><a class="go" href="https://gparted.org/download.php" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Memtest86+</h3><p>Проверка оперативной памяти на ошибки.</p></div><a class="go" href="https://memtest.org/" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Clonezilla</h3><p>Копирование дисков и разделов, перенос системы на новый накопитель.</p></div><a class="go" href="https://clonezilla.org/downloads.php" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Hiren's BootCD PE</h3><p>Мини-Windows для ремонта: сброс пароля, антивирусы, работа с дисками. Качать только с официального сайта.</p></div><a class="go" href="https://www.hirensbootcd.org/download/" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>SystemRescue</h3><p>Образ на Linux для ремонта систем, дисков и загрузчиков.</p></div><a class="go" href="https://www.system-rescue.org/Download/" target="_blank" rel="noopener">Скачать</a></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="group-head"><h2>Проверка файла</h2><p>Сверьте результат с контрольной суммой SHA256 на странице загрузки. Если не совпало, файл повреждён или подменён, скачайте заново.</p></div>
+    <div class="cmds">
+      <div class="cmd"><div><small>Windows, PowerShell</small><code>Get-FileHash .\имя-файла.iso -Algorithm SHA256</code></div><button class="copy" type="button">Копировать</button></div>
+      <div class="cmd"><div><small>Linux и macOS</small><code>sha256sum имя-файла.iso</code></div><button class="copy" type="button">Копировать</button></div>
+    </div>
+    <p class="note">Ссылки не меняются годами, но страницы производителей иногда переезжают. Если ссылка не открылась, найдите продукт по названию на официальном сайте.</p>
+  </section>
+
+  </div>
+
+  <div id="view-sec" class="view" hidden>
+  <p class="note">Всё ниже только для проверки своих систем или систем, на проверку которых у вас есть письменное разрешение. Проверка чужих систем без разрешения незаконна.</p>
+  <section>
+    <div class="group-head"><h2>Дистрибутивы для проверки безопасности</h2><p>Готовые системы с набором инструментов. Своя прошивка с нуля не нужна: берут такую основу и добавляют нужные программы.</p></div>
+    <div class="list">
+      <div class="row"><div><h3>Kali Linux</h3><p>Самая известная система для проверки безопасности. Ставится на компьютер, в виртуальную машину или запускается с флешки.</p></div><a class="go" href="https://www.kali.org/get-kali/" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Kali NetHunter</h3><p>Kali для Android-телефонов и планшетов. Нужны поддерживаемая модель и root.</p></div><a class="go" href="https://www.kali.org/get-kali/#kali-mobile" target="_blank" rel="noopener">Открыть</a></div>
+      <div class="row"><div><h3>Parrot Security</h3><p>Альтернатива Kali: легче и с упором на приватность.</p></div><a class="go" href="https://parrotsec.org/download/" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>BlackArch</h3><p>Система на Arch Linux с более чем тысячей инструментов.</p></div><a class="go" href="https://blackarch.org/downloads.html" target="_blank" rel="noopener">Скачать</a></div>
+    </div>
+  </section>
+  <section>
+    <div class="group-head"><h2>Поиск уязвимостей в коде по языкам</h2><p>Анализаторы исходного кода: находят опасные места до запуска программы.</p></div>
+    <div class="list">
+      <div class="row"><div><h3>Semgrep</h3><p>Много языков сразу: Python, JavaScript, Java, Go, PHP, C, Ruby, Kotlin и другие.</p></div><a class="go" href="https://semgrep.dev/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>CodeQL</h3><p>Глубокий анализ от GitHub для C/C++, C#, Java, JavaScript, Python, Go, Ruby, Swift.</p></div><a class="go" href="https://codeql.github.com/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>Bandit</h3><p>Python.</p></div><a class="go" href="https://bandit.readthedocs.io/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>gosec</h3><p>Go.</p></div><a class="go" href="https://github.com/securego/gosec" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>Brakeman</h3><p>Ruby on Rails.</p></div><a class="go" href="https://brakemanscanner.org/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>Find Security Bugs</h3><p>Java (плагин для SpotBugs).</p></div><a class="go" href="https://find-sec-bugs.github.io/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>eslint-plugin-security</h3><p>JavaScript и Node.js.</p></div><a class="go" href="https://github.com/eslint-community/eslint-plugin-security" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>cargo-audit</h3><p>Rust: проверка зависимостей на известные уязвимости.</p></div><a class="go" href="https://github.com/rustsec/rustsec/tree/main/cargo-audit" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>Trivy</h3><p>Контейнеры, зависимости и настройки инфраструктуры на любом языке.</p></div><a class="go" href="https://trivy.dev/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>OWASP Dependency-Check</h3><p>Известные уязвимости в библиотеках проекта.</p></div><a class="go" href="https://owasp.org/www-project-dependency-check/" target="_blank" rel="noopener">Сайт</a></div>
+    </div>
+  </section>
+  <section>
+    <div class="group-head"><h2>Сети, сайты и системы</h2></div>
+    <div class="list">
+      <div class="row"><div><h3>Nmap</h3><p>Сканирование сети: какие устройства и службы открыты.</p></div><a class="go" href="https://nmap.org/download.html" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>OWASP ZAP</h3><p>Проверка сайтов и веб-приложений.</p></div><a class="go" href="https://www.zaproxy.org/download/" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Wireshark</h3><p>Разбор сетевого трафика.</p></div><a class="go" href="https://www.wireshark.org/download.html" target="_blank" rel="noopener">Скачать</a></div>
+      <div class="row"><div><h3>Lynis</h3><p>Проверка настроек безопасности Linux и macOS.</p></div><a class="go" href="https://cisofy.com/lynis/" target="_blank" rel="noopener">Сайт</a></div>
+    </div>
+  </section>
+  <section>
+    <div class="group-head"><h2>Где тренироваться легально</h2><p>Специально уязвимые приложения и учебные площадки.</p></div>
+    <div class="list">
+      <div class="row"><div><h3>OWASP Juice Shop</h3><p>Магазин с намеренными дырами для тренировки.</p></div><a class="go" href="https://owasp.org/www-project-juice-shop/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>DVWA</h3><p>Уязвимое веб-приложение для локальной тренировки.</p></div><a class="go" href="https://github.com/digininja/DVWA" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>TryHackMe</h3><p>Обучение с нуля с готовыми стендами.</p></div><a class="go" href="https://tryhackme.com/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>Hack The Box</h3><p>Задачи разной сложности.</p></div><a class="go" href="https://www.hackthebox.com/" target="_blank" rel="noopener">Сайт</a></div>
+      <div class="row"><div><h3>OWASP Top 10</h3><p>Список самых частых уязвимостей, с него обычно начинают.</p></div><a class="go" href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener">Читать</a></div>
+    </div>
+  </section>
+  <section>
+    <div class="group-head"><h2>Как собрать свой образ</h2></div>
+    <div class="list"><div class="row"><div><h3>Свой Kali с нужными программами</h3><p>Официальная инструкция по сборке собственного образа Kali: вы выбираете набор программ, система собирается под вас.</p></div><a class="go" href="https://www.kali.org/docs/development/live-build-a-custom-kali-iso/" target="_blank" rel="noopener">Инструкция</a></div></div>
+  </section>
+  </div>
+
+  <div id="view-tools" class="view" hidden>
+  <section id="hashbox">
+    <div class="group-head"><h2>Проверка файла (SHA-256)</h2><p>Выберите скачанный образ и вставьте контрольную сумму со страницы загрузки. Файл не отправляется никуда, всё считается на вашем устройстве.</p></div>
+    <div class="finder">
+      <label class="label" for="hfile">Файл</label>
+      <input id="hfile" type="file">
+      <label class="label" for="hexp">Ожидаемая сумма (можно оставить пустой)</label>
+      <input id="hexp" type="text" autocomplete="off" spellcheck="false" placeholder="например, 64 символа из sha256sum">
+      <div class="hbar" id="hbar" hidden><span id="hbar-in"></span></div>
+      <p id="hres" class="hint" aria-live="polite"></p>
+      <div class="cmd" id="hout" hidden><div><small>SHA-256 файла</small><code id="hcode"></code></div><button class="copy" type="button">Копировать</button></div>
+    </div>
+  </section>
+  <section>
+    <div class="group-head"><h2>Установка adb и fastboot</h2><p>Это программы, через которые компьютер говорит с телефоном. Нужны почти для любой прошивки.</p></div>
+    <div class="list"><div class="row"><div><h3>Windows</h3><p>Скачайте официальный архив platform-tools от Google и распакуйте. Команды запускайте из этой папки.</p></div><a class="go" href="https://developer.android.com/tools/releases/platform-tools" target="_blank" rel="noopener">Скачать</a></div></div>
+    <div class="cmds"><div class="cmd"><div><small>Linux (Debian, Ubuntu, Mint)</small><code>sudo apt install adb fastboot android-sdk-platform-tools-common</code></div><button class="copy" type="button">Копировать</button></div><div class="cmd"><div><small>macOS (Homebrew)</small><code>brew install android-platform-tools</code></div><button class="copy" type="button">Копировать</button></div></div>
+  </section>
+  <section>
+    <div class="group-head"><h2>Шпаргалка команд</h2><p>Нужны, если делаете всё вручную по инструкции для своей модели.</p></div>
+    <div class="cmds"><div class="cmd"><div><small>Видит ли компьютер устройство в обычном режиме</small><code>adb devices</code></div><button class="copy" type="button">Копировать</button></div><div class="cmd"><div><small>Узнать модель</small><code>adb shell getprop ro.product.model</code></div><button class="copy" type="button">Копировать</button></div><div class="cmd"><div><small>Перезагрузить в режим fastboot</small><code>adb reboot bootloader</code></div><button class="copy" type="button">Копировать</button></div><div class="cmd"><div><small>Видит ли компьютер устройство в fastboot</small><code>fastboot devices</code></div><button class="copy" type="button">Копировать</button></div><div class="cmd"><div><small>Кодовое имя устройства в fastboot</small><code>fastboot getvar product</code></div><button class="copy" type="button">Копировать</button></div><div class="cmd"><div><small>Разблокировать загрузчик (сотрёт данные!)</small><code>fastboot flashing unlock</code></div><button class="copy" type="button">Копировать</button></div><div class="cmd"><div><small>Установить архив из режима восстановления</small><code>adb sideload имя-файла.zip</code></div><button class="copy" type="button">Копировать</button></div><div class="cmd"><div><small>Перезагрузить устройство</small><code>fastboot reboot</code></div><button class="copy" type="button">Копировать</button></div></div>
+    <p class="note">Разблокировка загрузчика стирает все данные. Команды других производителей отличаются, смотрите инструкцию своей модели.</p>
+  </section>
+  <section>
+    <div class="group-head"><h2>Компьютер не видит устройство</h2></div>
+    <div class="list">
+      <div class="row"><div><h3>Кабель и порт</h3><p>Часть кабелей только заряжает. Возьмите оригинальный кабель и порт USB напрямую на компьютере, без разветвителя.</p></div></div>
+      <div class="row"><div><h3>Отладка по USB</h3><p>Включите в «Для разработчиков» и подтвердите окно «Разрешить отладку» на экране устройства.</p></div></div>
+      <div class="row"><div><h3>Режим USB</h3><p>В шторке уведомлений выберите «Передача файлов», а не «Только зарядка».</p></div></div>
+      <div class="row"><div><h3>Драйверы в Windows</h3><p>Если устройство в диспетчере устройств с жёлтым значком, поставьте драйвер производителя или Google USB Driver.</p></div><a class="go" href="https://developer.android.com/studio/run/win-usb" target="_blank" rel="noopener">Драйвер</a></div>
+      <div class="row"><div><h3>Linux</h3><p>Поставьте пакет android-sdk-platform-tools-common (правила udev) и переподключите устройство.</p></div></div>
+    </div>
+  </section>
+  <section>
+    <div class="group-head"><h2>Чеклист перед прошивкой</h2><p>Отметки сохраняются в этом браузере.</p></div>
+    <div class="finder" id="chklist"><label class="chk"><input type="checkbox" data-ck="0"><span>Зарядка выше 70%</span></label><label class="chk"><input type="checkbox" data-ck="1"><span>Сделана копия нужных данных (фото, контакты, переписки)</span></label><label class="chk"><input type="checkbox" data-ck="2"><span>Есть оригинальный кабель и свободный порт USB на компьютере</span></label><label class="chk"><input type="checkbox" data-ck="3"><span>Включены «Отладка по USB» и «Разблокировка OEM»</span></label><label class="chk"><input type="checkbox" data-ck="4"><span>Модель проверена в каталоге прошивки (не «похожая», а точно эта)</span></label><label class="chk"><input type="checkbox" data-ck="5"><span>Скачаны образ и инструкция для именно этой модели</span></label><label class="chk"><input type="checkbox" data-ck="6"><span>Контрольная сумма файла совпала</span></label><label class="chk"><input type="checkbox" data-ck="7"><span>Устройство подключено напрямую, без разветвителя</span></label><label class="chk"><input type="checkbox" data-ck="8"><span>Понимаю, что данные сотрутся и гарантия может пропасть</span></label></div>
+  </section>
+  <section>
+    <div class="group-head"><h2>Как узнать свою модель</h2></div>
+    <div class="list">
+      <div class="row"><div><h3>В настройках</h3><p>Настройки → О телефоне (планшете). Смотрите «Название модели» и «Номер модели».</p></div></div>
+      <div class="row"><div><h3>На упаковке и корпусе</h3><p>Номер модели напечатан на коробке, под лотком SIM или на задней крышке (например SM-T510).</p></div></div>
+      <div class="row"><div><h3>Через компьютер</h3><p>Кнопка «Определить подключённое устройство» на вкладке «Телефоны» или «Планшеты».</p></div></div>
+    </div>
+  </section>
+  </div>
+
+  <p class="sign">sudo_flash × Claude</p>
+
+  <p class="legal">Страница не хранит и не раздаёт образы. Все ссылки ведут на сайты правообладателей. Windows и другие названия принадлежат их владельцам, этот сайт с ними не связан.</p>
+</div>
+
+<script>
+document.querySelectorAll('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var code=btn.parentElement.querySelector('code');
+    var text=code.textContent;
+    function ok(){btn.textContent='Скопировано';setTimeout(function(){btn.textContent='Копировать'},1600)}
+    function fallback(){
+      var r=document.createRange();r.selectNodeContents(code);
+      var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+      btn.textContent='Выделено';setTimeout(function(){btn.textContent='Копировать'},1600);
+    }
+    try{navigator.clipboard.writeText(text).then(ok,fallback)}catch(e){fallback()}
+  });
+});
+</script>
+<script>
+(function(){
+var RAW=`10.or|G|p|G|G|20|
+Amazon|Fire Max 11|t|sunstone|KFSNWI|24.0|
+ASUS|Zenfone 5Z (ZS620KL)|p|Z01R||22.2|
+ASUS|ZenFone 8|p|sake|I006D ZS590KS|24.0|
+ASUS|Zenfone Max Pro M1|p|X00TD||24.0|X00TD
+BQ|Aquaris X|p|bardock||20|
+BQ|Aquaris X Pro|p|bardockpro||20|
+BQ|Aquaris X2|p|zangya||20|
+BQ|Aquaris X2 Pro|p|zangyapro||20|
+Essential|PH-1|p|mata||22.2|
+F(x)tec|Pro¹|p|pro1||22.2|pro1
+F(x)tec|Pro¹ X|p|pro1x||24.0|pro1x
+Fairphone|3|p|FP3||22.2|FP3
+Fairphone|4|p|FP4|FP4|24.0|FP4
+Fairphone|5|p|FP5|FP5|24.0|FP5
+Fairphone|The Fairphone (Gen. 6)|p|FP6|FP6|23.2|FP6
+Google|Pixel|p|sailfish||22.2|
+Google|Pixel 10|p|frankel||24.0|
+Google|Pixel 10 Pro|p|blazer||24.0|
+Google|Pixel 10 Pro Fold|p|rango||24.0|
+Google|Pixel 10 Pro XL|p|mustang||24.0|
+Google|Pixel 10a|p|stallion||24.0|
+Google|Pixel 2|p|walleye||22.2|walleye
+Google|Pixel 2 XL|p|taimen||22.2|taimen
+Google|Pixel 3|p|blueline||22.2|
+Google|Pixel 3 XL|p|crosshatch||22.2|
+Google|Pixel 3a|p|sargo|G020F G020G G020H|22.2|sargo
+Google|Pixel 3a XL|p|bonito|G020B G020C G020D|22.2|
+Google|Pixel 4|p|flame||24.0|
+Google|Pixel 4 XL|p|coral||24.0|
+Google|Pixel 4a|p|sunfish||24.0|
+Google|Pixel 4a 5G|p|bramble||24.0|
+Google|Pixel 5|p|redfin||24.0|
+Google|Pixel 5a|p|barbet||24.0|
+Google|Pixel 6|p|oriole||24.0|
+Google|Pixel 6 Pro|p|raven||24.0|
+Google|Pixel 6a|p|bluejay||24.0|
+Google|Pixel 7|p|panther||24.0|
+Google|Pixel 7 Pro|p|cheetah||24.0|
+Google|Pixel 7a|p|lynx||24.0|
+Google|Pixel 8|p|shiba||24.0|
+Google|Pixel 8 Pro|p|husky||24.0|
+Google|Pixel 8a|p|akita||24.0|
+Google|Pixel 9|p|tokay||24.0|
+Google|Pixel 9 Pro|p|caiman||24.0|
+Google|Pixel 9 Pro Fold|p|comet||24.0|
+Google|Pixel 9 Pro XL|p|komodo||24.0|
+Google|Pixel 9a|p|tegu||24.0|tegu
+Google|Pixel Fold|p|felix||24.0|
+Google|Pixel Tablet|t|tangorpro||24.0|
+Google|Pixel XL|p|marlin||22.2|
+Lenovo|Z5 Pro GT|p|heart|L78032|24.0|
+Lenovo|Z6 Pro|p|zippo|L78051|24.0|
+LG|G5 (International)|p|h850||22.2|
+LG|G5 (T-Mobile)|p|h830||22.2|
+LG|G5 (US Unlocked)|p|rs988||22.2|
+LG|G6 (Canada - ENG BL)|p|h873||22.2|
+LG|G6 (EU Unlocked - ENG BL)|p|h870d||22.2|
+LG|G6 (EU Unlocked)|p|h870||22.2|
+LG|G6 (T-Mobile)|p|h872||22.2|
+LG|G6 (US Unlocked)|p|us997||22.2|
+LG|G7 ThinQ (G710AWM/EM/EMW)|p|judyln|LM-G710AWM LM-G710EM LM-G710EMW|22.2|
+LG|G7 ThinQ (G710N)|p|g710n|LM-G710N|22.2|
+LG|G7 ThinQ (G710ULM/VMX)|p|g710ulm|LM-G710ULM LM-G710VMX|22.2|
+LG|G8 ThinQ|p|alphaplus|LM-G820UM LM-G820QM|21|
+LG|G8s ThinQ|p|betalm|LM-G810EA LM-G810EAW LM-G810RA|21|
+LG|G8X ThinQ (G850EM/EMW)|p|mh2lm|LM-G850EM LM-G850EMW|21|
+LG|Style3|p|style3lm|L-41A|22.2|
+LG|V20 (AT&T)|p|h910||22.2|
+LG|V20 (Global)|p|h990||22.2|
+LG|V20 (GSM Unlocked - DirtySanta)|p|us996d||22.2|
+LG|V20 (GSM Unlocked)|p|us996||22.2|
+LG|V20 (Sprint)|p|ls997||22.2|
+LG|V20 (T-Mobile)|p|h918||22.2|
+LG|V20 (Verizon)|p|vs995||22.2|
+LG|V30 (Japan)|p|l01k|L-01K LGV35|22.2|
+LG|V30 (T-Mobile)|p|h932|H932|20|
+LG|V30 (Unlocked)|p|joan|H930 H930DS US998|22.2|
+LG|V35 ThinQ|p|judyp|LM-V350AWM LM-V350N|22.2|
+LG|V40 ThinQ|p|judypn|LM-V405QA7 LM-V405UA LM-V405UA0 LM-V405EBW LM-V405EAW LM-V409N|22.2|
+LG|V50 ThinQ|p|flashlmdd|LM-V500EM LM-V500N|21|
+LG|V60 ThinQ|p|timelm|L-51A LM-V600EA LM-V600VM LM-V600TM LM-V600N|23.2|
+LG|Velvet 4G|p|caymanslm|LM-G910EMW LM-G910HM LM-G910HMW|22.2|
+LG|Velvet 5G|p|caymanlm|LM-G900EM LM-G900UM LM-G900N LM-G910N|23.2|
+LG|Wing|p|winglm|LM-F100EM LM-F100N|23.2|
+Motorola|defy 2021|p|bathena|XT2083-8 XT2083-9|24.0|
+Motorola|edge|p|racer|XT2063-2 XT2063-3|23.2|
+Motorola|edge 20|p|berlin|XT2143-1|24.0|
+Motorola|edge 20 pro|p|pstar|XT2153-1|24.0|
+Motorola|edge 2021|p|berlna|XT2141-2|24.0|
+Motorola|edge 2024|p|avatrn|XT2405-1 XT2405V|24.0|
+Motorola|edge 30|p|dubai|XT2203-1|24.0|
+Motorola|edge 30 fusion|p|tundra|XT2243-1|24.0|
+Motorola|edge 30 neo|p|miami|XT2245-1|24.0|
+Motorola|edge 30 ultra|p|eqs|XT2241-1 XT2241-2|24.0|
+Motorola|edge 40|p|lyriq|XT2303-1 XT2303-2 XT2303-3|24.0|
+Motorola|edge 40 neo|p|manaus|XT2307-1 XT2307-2 XT2307-3|23.2|
+Motorola|edge 40 pro|p|rtwo|XT2301-4|24.0|
+Motorola|edge s|p|nio|XT2125-4|24.0|
+Motorola|moto e7 plus|p|guam|XT2081-1 XT2081-2 XT2081-3|24.0|
+Motorola|moto g 5G|p|kiev|XT2113-3|23.2|
+Motorola|moto g 5G - 2024|p|fogo|XT2417-1|24.0|
+Motorola|moto g 5G plus|p|nairo|XT2075-3|23.2|
+Motorola|moto g play (2021)|p|guamna|XT2093-3 XT2093-4|24.0|
+Motorola|moto g power 2021|p|borneo|XT2117-1 XT2117-2 XT2117-3 XT2117-4|24.0|
+Motorola|moto g pure|p|ellis|XT2163-1 XT2163-2 XT2163-4 XT2163-6 XT2163-7 XT2163DL|24.0|
+Motorola|moto g stylus 5G|p|denver|XT2131-1|24.0|
+Motorola|moto g stylus 5G (2022)|p|milanf|XT2215-1 XT2215-3 XT2215-4|24.0|
+Motorola|moto g stylus 5G (2023)|p|genevn|XT2315-1 XT2315-4 XT2315-5|24.0|
+Motorola|moto g10|p|capri|XT2127-1 XT2127-2|24.0|
+Motorola|moto g15|p|lamu|XT2521-2 XT2521-3 XT2521-4|24.0|
+Motorola|moto g200 5G|p|xpeng|XT2175-1|24.0|
+Motorola|moto g30|p|caprip|XT2129-1 XT2129-2|24.0|
+Motorola|moto g32|p|devon|XT2235-1 XT2235-2 XT2235-3|24.0|
+Motorola|moto g34 5G|p|fogos|XT2363-1 XT2363-2 XT2363-3 XT2363-4 XT2363-5|24.0|
+Motorola|moto g42|p|hawao|XT2233-1 XT2233-2|24.0|
+Motorola|moto g50|p|ibiza|XT2137-1|24.0|
+Motorola|moto g52|p|rhode|XT2221-1 XT2221-2|24.0|
+Motorola|moto g6 plus|p|evert|XT1926-2 XT1926-3 XT1926-5 XT1926-6 XT1926-7 XT1926-8|22.2|
+Motorola|moto g7|p|river|XT1962-01 XT1962-04 XT1962-05 XT1962-06|22.2|
+Motorola|moto g7 play|p|channel|XT1952-1 XT1952-2 XT1952-3|22.2|
+Motorola|moto g7 plus|p|lake|XT1965-2 XT1965-3 XT1965-6 XT1965-T|22.2|
+Motorola|moto g7 power|p|ocean|XT1955-1 XT1955-2 XT1955-4 XT1955-5 XT1955-7|22.2|
+Motorola|moto g82 5G|p|rhodep|XT2225-1|24.0|
+Motorola|moto g84 5G|p|bangkk|XT2347-1 XT2347-2|24.0|
+Motorola|moto g9 play|p|guamp|XT2083-1 XT2083-3 XT2083-5 XT2083-6 XT2083-7|24.0|
+Motorola|moto g9 power|p|cebu|XT2091-3 XT2091-4|24.0|
+Motorola|moto x4|p|payton|XT1900-1 XT1900-2 XT1900-3 XT1900-4 XT1900-5 XT1900-6|22.2|
+Motorola|moto z2 force|p|nash|XT1789-02 XT1789-03 XT1789-04 XT1789-05 XT1789-06 XT1789-07|22.2|
+Motorola|moto z3|p|messi|XT1929-15 XT1929-17|22.2|
+Motorola|moto z3 play|p|beckham|XT1929-2 XT1929-3 XT1929-4 XT1929-5 XT1929-6|22.2|
+Motorola|one action|p|troika|XT2013-1 XT2013-2 XT2013-3 XT2013-4|24.0|
+Motorola|one fusion+|p|liber|XT2067-2|20|
+Motorola|one vision|p|kane|XT1970-1 XT1970-2 XT1970-3|24.0|
+Motorola|one zoom|p|parker|XT2010-1|20|
+Motorola|ThinkPhone by motorola|p|bronco|XT2309-2 XT2309-3|24.0|
+Nokia|6.1 (2018)|p|PL2|TA-1043 TA-1089|22.2|
+Nokia|6.1 Plus|p|DRG|TA-1083|22.2|
+Nokia|7 plus|p|B2N|TA-1041 TA-1062 TA-1046|22.2|
+Nokia|8|p|NB1|TA-1004 TA-1012 TA-1052|22.2|
+Nothing|Phone (1)|p|Spacewar|A063|24.0|Spacewar
+Nothing|Phone (2)|p|Pong|A065 AIN065|23.2|
+Nubia|Mini 5G|p|TP1803||24.0|
+Nubia|Play 5G|p|nx651j|NX651J|21|
+Nubia|Red Magic|p|nx609j|NX609J|21|
+Nubia|Red Magic 5G (Global)|p|nx659j|NX659J NX659J-EEA NX659J-UN|23.2|
+Nubia|Red Magic Mars|p|nx619j|NX619J|22.2|
+Nubia|X|p|nx616j|NX616J|22.2|
+Nubia|Z17|p|nx563j||22.2|
+Nubia|Z18|p|nx606j|NX606J|22.2|
+Nubia|Z18 Mini|p|nx611j|NX611J M3|21|
+OnePlus|11 5G|p|salami|CPH2447 CPH2449 CPH2451 PHB110|24.0|
+OnePlus|12|p|waffle|CPH2573 CPH2581 CPH2583 PJD110|24.0|
+OnePlus|12R|p|aston|CPH2585 CPH2609 CPH2611|24.0|
+OnePlus|13|p|dodge|CPH2649 CPH2653 CPH2655 PJZ110|24.0|
+OnePlus|13R|p|giulia|CPH2691 CPH2647 CPH2645|23.2|
+OnePlus|15|p|infiniti|CPH2745 CPH2747 CPH2749 PLK110|24.0|
+OnePlus|15T|p|fairlady|PLZ110|24.0|
+OnePlus|5|p|cheeseburger||22.2|cheeseburger
+OnePlus|5T|p|dumpling||22.2|dumpling
+OnePlus|6|p|enchilada||22.2|enchilada
+OnePlus|6T|p|fajita||22.2|enchilada
+OnePlus|7|p|guacamoleb|GM1900 GM1901 GM1903 GM1905|24.0|
+OnePlus|7 Pro|p|guacamole|GM1910 GM1911 GM1913 GM1917|24.0|
+OnePlus|7T|p|hotdogb|HD1900 HD1901 HD1903 HD1905|24.0|
+OnePlus|7T Pro|p|hotdog|HD1910 HD1911 HD1913 HD1917|24.0|
+OnePlus|8|p|instantnoodle|IN2010 IN2011 IN2013 IN2015|24.0|
+OnePlus|8 Pro|p|instantnoodlep|IN2020 IN2021 IN2023 IN2025|24.0|
+OnePlus|8T|p|kebab|KB2000 KB2001 KB2003 KB2005|24.0|
+OnePlus|9|p|lemonade|LE2110 LE2111 LE2113 LE2115|24.0|
+OnePlus|9 Pro|p|lemonadep|LE2120 LE2121 LE2123 LE2125|24.0|
+OnePlus|9R|p|lemonades|LE2100 LE2101|24.0|
+OnePlus|9RT|p|martini|MT2110 MT2111|24.0|
+OnePlus|Ace 3|p|astonc|PJE110|24.0|
+OnePlus|Ace 3 Pro|p|corvette|PJX110|23.2|
+OnePlus|Ace 3V|p|audi|PJF110|23.2|
+OnePlus|Ace 5|p|giuliac|PKG110|23.2|
+OnePlus|Ace 5 Pro|p|hummer|PKR110|24.0|
+OnePlus|Ace 6|p|ktm|PLQ110|24.0|
+OnePlus|Nord|p|avicii|AC2001 AC2003|21|
+OnePlus|Nord 4|p|avalon|CPH2661 CPH2663|23.2|
+OnePlus|Nord 5|p|lexus|CPH2707 CPH2709|23.2|
+OnePlus|Nord CE 2 Lite 5G|p|oscaro|CPH2381 CPH2409|24.0|
+OnePlus|Nord CE 3 Lite 5G|p|larry|CPH2467 CPH2465|24.0|
+OnePlus|Nord CE 5G|p|ebba|EB2101 EB2103|24.0|
+OnePlus|Nord CE4|p|benz|CPH2613|24.0|
+OnePlus|Nord N10|p|billie|BE2029 BE2025 BE2026 BE2028|24.0|billie
+OnePlus|Nord N20|p|gunnar|CPH2459|24.0|
+OnePlus|Nord N200|p|dre|DE2117|24.0|
+OnePlus|Open|p|xueying|CPH2551|24.0|
+OnePlus|Pad 2 Pro|t|erhai|OPD2413|24.0|
+OnePlus|Pad 3 Pro|t|iceland|OPD2513|24.0|
+OnePlus|Pad Pro|t|caihong|OPD2404|23.2|
+OSOM|OV1|p|pyrite||24.0|
+Razer|Edge 5G|t|nicole|RZ80-0460|24.0|
+Razer|Phone|p|cheryl||22.2|
+Razer|Phone 2|p|aura||22.2|
+Realme|10 Pro 5G|p|luigi|RMX3660 RMX3661|24.0|
+Realme|9 5G|p|oscarru|RMX3474|24.0|
+Realme|9 Pro 5G|p|oscar|RMX3471 RMX3472|24.0|
+Realme|GT Neo6|p|bale|RMX3852|23.2|
+Realme|GT7 Pro|p|pista|RMX5010|24.0|
+Realme|GT7 Pro Racing Edition|p|piloti|RMX5090|24.0|
+Realme|Q5|p|oscarc|RMX3478|24.0|
+Samsung|Galaxy A21s|p|a21s|SM-A217F SM-A217M SM-A217F/DS SM-A217F/DSN SM-A217M/DS|24.0|
+Samsung|Galaxy A52 4G|p|a52q|SM-A525F SM-A525M SM-A525F/DS SM-A525M/DS|24.0|
+Samsung|Galaxy A52s 5G|p|a52sxq|SM-A528B SM-A528N SM-A528B/DS|24.0|
+Samsung|Galaxy A53 5G|p|a53x|SM-A5360 SM-A536B SM-A536B/DS SM-A536E SM-A536E/DS SM-A536N|24.0|
+Samsung|Galaxy A55 5G|p|a55x|SM-A556B SM-A556B/DS SM-A556E SM-A556E/DS|24.0|
+Samsung|Galaxy A71|p|a71|SM-A715F SM-A715F/DS SM-A715F/DSN SM-A715F/DSM|23.2|
+Samsung|Galaxy A72|p|a72q|SM-A725F SM-A725M SM-A725F/DS SM-A725M/DS|24.0|
+Samsung|Galaxy A73 5G|p|a73xq|SM-A736B SM-A736B/DS|24.0|
+Samsung|Galaxy F62|p|f62|SM-E625F SM-E625F/DS|23.2|
+Samsung|Galaxy M20|p|m20lte|SM-M205F SM-M205FN SM-M205G SM-M205M SM-M205N|22.2|
+Samsung|Galaxy M52 5G|p|m52xq|SM-M526B SM-M526BR SM-M526B/DS SM-M526BR/DS|24.0|
+Samsung|Galaxy Note 9|p|crownlte|SM-N960F SM-N960F/DS SM-N960N|20|
+Samsung|Galaxy Note10|p|d1|SM-N970F SM-N970F/DS|23.2|
+Samsung|Galaxy Note10 5G|p|d1x|SM-N971N|23.2|
+Samsung|Galaxy Note10+|p|d2s|SM-N975F SM-N975F/DS|23.2|
+Samsung|Galaxy Note10+ 5G|p|d2x|SM-N976B SM-N976N|23.2|
+Samsung|Galaxy Note20 (4G/5G)|p|c1s|SM-N980F SM-N980F/DS SM-N981B SM-N981B/DS|24.0|
+Samsung|Galaxy Note20 Ultra (4G/5G)|p|c2s|SM-N985F SM-N985F/DS SM-N986B SM-N986B/DS|24.0|
+Samsung|Galaxy S10|p|beyond1lte|SM-G973F SM-G973F/DS SM-G973N|23.2|
+Samsung|Galaxy S10 5G|p|beyondx|SM-G977B SM-G977N|23.2|
+Samsung|Galaxy S10+|p|beyond2lte|SM-G975F SM-G975F/DS SM-G975N|23.2|
+Samsung|Galaxy S10e|p|beyond0lte|SM-G970F SM-G970F/DS SM-G970N|23.2|
+Samsung|Galaxy S20 (4G/5G)|p|x1s|SM-G980F SM-G980F/DS SM-G981B SM-G981B/DS|24.0|
+Samsung|Galaxy S20 FE (Exynos)|p|r8s|SM-G780F SM-G780F/DS|24.0|
+Samsung|Galaxy S20 FE (Snapdragon)|p|r8q|SM-G780G SM-G780G/DS|24.0|
+Samsung|Galaxy S20 Ultra (5G)|p|z3s|SM-G988B SM-G988B/DS|24.0|
+Samsung|Galaxy S20+ (4G/5G)|p|y2s|SM-G985F SM-G985F/DS SM-G986B SM-G986B/DS|24.0|
+Samsung|Galaxy S22|p|r0s|SM-S901B SM-S901B/DS|24.0|
+Samsung|Galaxy S22 Ultra|p|b0s|SM-S908B SM-S908B/DS|24.0|
+Samsung|Galaxy S22+|p|g0s|SM-S906B SM-S906B/DS|24.0|
+Samsung|Galaxy S23|p|dm1q|SM-S911B SM-S911B/DS|24.0|
+Samsung|Galaxy S23 Ultra|p|dm3q|SM-S918B SM-S918B/DS|24.0|
+Samsung|Galaxy S9|p|starlte|SM-G960F SM-G960F/DS SM-G960N|20|
+Samsung|Galaxy S9+|p|star2lte|SM-G965F SM-G965F/DS SM-G965N|20|
+Samsung|Galaxy Tab A 8.0 (2019)|t|gtowifi|SM-T290|22.2|
+Samsung|Galaxy Tab A7 10.4 2020 (LTE)|t|gta4l|SM-T505 SM-T505C SM-T505N SM-T507|24.0|
+Samsung|Galaxy Tab A7 10.4 2020 (Wi-Fi)|t|gta4lwifi|SM-T500|24.0|
+Samsung|Galaxy Tab S5e (LTE)|t|gts4lv|SM-T725 SM-T725C SM-T725N SM-T727|22.2|
+Samsung|Galaxy Tab S5e (Wi-Fi)|t|gts4lvwifi|SM-T720 SM-T720N|22.2|
+Samsung|Galaxy Tab S6 Lite (LTE)|t|gta4xl|SM-P615|23.2|
+Samsung|Galaxy Tab S6 Lite (Wi-Fi)|t|gta4xlwifi|SM-P610|23.2|
+Samsung|Galaxy Tab S6 Lite 2024 (Wi-Fi)|t|gta4xlswifi|SM-P620|23.2|
+Samsung|Galaxy Tab S7 (LTE)|t|gts7l|SM-T875|24.0|
+Samsung|Galaxy Tab S7 (Wi-Fi)|t|gts7lwifi|SM-T870|24.0|
+Samsung|Galaxy Tab S7+ (LTE/5G)|t|gts7xl|SM-T975 SM-T976B|24.0|
+Samsung|Galaxy Tab S7+ (Wi-Fi)|t|gts7xlwifi|SM-T970|24.0|
+Samsung|Galaxy Z Fold5|p|q5q|SM-F946B SM-F946B/DS|24.0|
+SHIFT|SHIFT6mq|p|axolotl||22.2|axolotl
+SHIFT|SHIFTphone 8.0|p|otter||24.0|otter
+Smartisan|R1|p|trident|DE106|22.2|
+Solana|Saga|p|ingot||24.0|
+Sony|Xperia 1 II|p|pdx203|XQ-AT72 XQ-AT52 XQ-AT51 XQ-AT42|24.0|
+Sony|Xperia 1 III|p|pdx215|XQ-BC72 XQ-BC62 XQ-BC52 XQ-BC42|24.0|
+Sony|Xperia 1 IV|p|pdx223|XQ-CT44 XQ-CT54 XQ-CT72|24.0|
+Sony|Xperia 1 V|p|pdx234|XQ-DQ54 XQ-DQ72|24.0|
+Sony|Xperia 1 VI|p|pdx245|XQ-EC54 XQ-EC72|24.0|
+Sony|Xperia 10|p|kirin|I3113 I3123 I4113 I4193|24.0|
+Sony|Xperia 10 IV|p|pdx225|XQ-CC54 XQ-CC72|24.0|
+Sony|Xperia 10 Plus|p|mermaid|I3213 I3223 I4213 I4293|23.2|
+Sony|Xperia 10 V|p|pdx235|XQ-DC54 XQ-DC72|24.0|
+Sony|Xperia 10 VII|p|pdx257|XQ-FE54 XQ-FE72|24.0|
+Sony|Xperia 10 VIII|p|pdx268|XQ-GH54 XQ-GH74|24.0|
+Sony|Xperia 5 II|p|pdx206|XQ-AS72 XQ-AS62 XQ-AS52 XQ-AS42|24.0|
+Sony|Xperia 5 III|p|pdx214|XQ-BQ72 XQ-BQ62 XQ-BQ52 XQ-BQ42|24.0|
+Sony|Xperia 5 IV|p|pdx224|XQ-CQ44 XQ-CQ54 XQ-CQ72|24.0|
+Sony|Xperia 5 V|p|pdx237|XQ-DE44 XQ-DE54 XQ-DE72|24.0|
+Sony|Xperia XA2|p|pioneer|H3113 H4113 H3133 H4133 H3123|24.0|
+Sony|Xperia XA2 Plus|p|voyager|H3413 H4413 H4493|24.0|
+Sony|Xperia XA2 Ultra|p|discovery|H3213 H4213 H4233 H3223|24.0|
+Sony|Xperia XZ2|p|akari|H8216 H8266 H8276 H8296|22.2|
+Sony|Xperia XZ2 Compact|p|xz2c|H8314 H8324|22.2|
+Sony|Xperia XZ2 Premium|p|aurora|H8116 H8166|22.2|
+Sony|Xperia XZ3|p|akatsuki|H8416 H9436 H9493|22.2|
+Vsmart|Joy 3|p|casuarina|V430A|22.2|
+Xiaomi|11 Lite 5G NE|p|lisa|2109119DG|23.2|
+Xiaomi|12|p|cupid|2201123C 2201123G|24.0|
+Xiaomi|12 Pro|p|zeus|2201122C 2201122G|24.0|
+Xiaomi|12S|p|mayfly|2206123SC|24.0|
+Xiaomi|12S Pro|p|unicorn|2206122SC|24.0|
+Xiaomi|12S Ultra|p|thor|2203121C|24.0|
+Xiaomi|12T Pro|p|diting|22081212UG 22081212R 22200414R A201XM|24.0|
+Xiaomi|13|p|fuxi|2211133G 2211133C|24.0|
+Xiaomi|13 Pro|p|nuwa|2210132G 2210132C|24.0|
+Xiaomi|Black Shark|p|shark|SKR-A0 SKR-H0|22.2|
+Xiaomi|Mi 10|p|umi|M2001J2G M2001J2I|23.2|
+Xiaomi|Mi 10 Lite 5G|p|monet|M2002J9G|22.1|
+Xiaomi|Mi 10 Pro|p|cmi|M2001J1G|24.0|
+Xiaomi|Mi 10 Ultra|p|cas|M2007J1SC|24.0|
+Xiaomi|Mi 10S|p|thyme|M2102J2SC|23.2|
+Xiaomi|Mi 10T|p|apollon|M2007J3SY|24.0|
+Xiaomi|Mi 10T Lite 5G|p|gauguin|M2007J17G|24.0|
+Xiaomi|Mi 11|p|venus|M2011K2C M2011K2G|23.2|
+Xiaomi|Mi 11 Lite 5G|p|renoir|M2101K9G M2101K9C M2101K9R|23.2|
+Xiaomi|Mi 11 Pro|p|mars|M2102K1AC|23.2|
+Xiaomi|Mi 11i|p|haydn|M2012K11G|23.2|
+Xiaomi|Mi 5|p|gemini||22.2|
+Xiaomi|Mi 5s Plus|p|natrium||22.2|
+Xiaomi|Mi 6|p|sagit||22.2|sagit
+Xiaomi|Mi 8|p|dipper||22.2|dipper
+Xiaomi|Mi 8 Explorer Edition|p|ursa||22.2|
+Xiaomi|Mi 8 Pro|p|equuleus||22.2|
+Xiaomi|Mi 8 SE|p|xmsirius|M1805E2A|20|
+Xiaomi|Mi 9 SE|p|grus|M1903F2G M1903F2A|22.2|
+Xiaomi|Mi 9T|p|davinci|M1903F10G|23.2|
+Xiaomi|Mi A1|p|tissot||20|
+Xiaomi|Mi A3|p|laurel_sprout|M1906F9SH M1906F9SI|24.0|laurel_sprout
+Xiaomi|Mi CC9|p|pyxis|M1904F3BC|22.2|
+Xiaomi|Mi CC9 Meitu Edition|p|vela|M1904F3BT|22.2|
+Xiaomi|Mi MIX 2|p|chiron||22.2|
+Xiaomi|Mi MIX 2S|p|polaris||22.2|
+Xiaomi|Mi MIX 3|p|perseus||22.2|perseus
+Xiaomi|Mi Note 10|p|tucana|M1910F4G|23.2|
+Xiaomi|Mi Note 2|p|scorpio||22.2|
+Xiaomi|MIX Fold 2|p|zizhan|22061218C|24.0|
+Xiaomi|POCO F1|p|beryllium||22.2|beryllium
+Xiaomi|POCO F2 Pro|p|lmi|M2004J11G|23.2|
+Xiaomi|POCO F3|p|alioth|M2012K11AG|24.0|
+Xiaomi|POCO F4|p|munch|22021211RG 22021211RI|23.2|
+Xiaomi|POCO F5 (Global)|p|marble|23049PCD8G|24.0|
+Xiaomi|POCO F5 Pro|p|mondrian|23013PC75G|24.0|
+Xiaomi|POCO F6|p|peridot|24069PC21G 24069PC21I|24.0|
+Xiaomi|POCO F6 Pro|p|vermeer|23113RKC6G|24.0|
+Xiaomi|POCO M2 Pro|p|miatoll|M2003J6CI|22.2|miatoll
+Xiaomi|POCO X3 NFC|p|surya|M2007J20CG M2007J20CI|22.2|surya
+Xiaomi|POCO X3 Pro|p|vayu|M2102J20SG M2102J20SI|22.2|
+Xiaomi|POCO X4 GT|p|xaga|22041216G|24.0|
+Xiaomi|Redmi 12C|p|earth||24.0|
+Xiaomi|Redmi 3S|p|Mi8937|2016031 2016037 2016032 2016030|23.2|
+Xiaomi|Redmi 4A|p|Mi8917|2016111 2016112 2016116 2016117|23.2|
+Xiaomi|Redmi 7|p|onclite||21|onclite
+Xiaomi|Redmi 7A|p|Mi439|M1903C3EC M1903C3EE M1903C3EG M1903C3EH M1903C3EI M1903C3ET|23.2|
+Xiaomi|Redmi 9|p|lancelot||24.0|lancelot
+Xiaomi|Redmi K60 Pro|p|socrates|22127RK46C|24.0|
+Xiaomi|Redmi Note 10 Pro|p|sweet|M2101K6G M2101K6R|23.2|
+Xiaomi|Redmi Note 10S|p|rosemary||24.0|
+Xiaomi|Redmi Note 13 Pro 5G|p|garnet|2312DRA50G XIG05|24.0|
+Xiaomi|Redmi Note 7 Pro|p|violet|M1901F7S M1901F7BE|23.2|violet
+Xiaomi|Redmi Note 8|p|ginkgo||24.0|
+Xiaomi|Redmi Note 9|p|merlinx||24.0|
+Zinwa|Q25 Pro|p|Q25||24.0|Q25
+ZTE|Axon 9 Pro|p|akershus|P845A01 P845A02|22.2|
+ZUK|Z2 Plus|p|z2_plus||20|
+Bq|Aquaris E4.5|p||||krillin
+Bq|Aquaris E5|p||||vegetahd
+Bq|Aquaris M10 FHD|t||||frieza
+Bq|Aquaris M10 HD|t||||cooler
+Fairphone|2|p||||FP2
+JingPad|A1|t||||jingpad_a1
+Lenovo|Smart Tab M10 X605F/L|t||||X605
+Lenovo|Tab M10 HD 2nd Gen LTE|t||||amar_row_lte
+Lenovo|Tab M10 HD 2nd Gen Wifi|t||||amar_row_wifi
+Meizu|MX4|p||||arale
+Meizu|Pro 5|p||||turbo
+Motorola|Edge 50 Pro|p||||eqe
+Nexus|4|p||||mako
+Nexus|5|p||||hammerhead
+Nexus|6P|p||||angler
+Nexus|7 2013 LTE|t||||deb
+Nexus|7 2013 WiFi|t||||flo
+Oneplus|2|p||||oneplus2
+Oneplus|3/3T|p||||oneplus3
+OnePlus|Nord 2 5G|p||||denniz
+OnePlus|Nord N100|p||||billie2
+Oneplus|One|p||||bacon
+rabbit|r1|p||||r1
+Samsung|Galaxy Note 4 [910F]|p||||trlte
+Samsung|Galaxy Note 4 [910P, 910V]|p||||trltespr
+Samsung|Galaxy Note 4 [910T]|p||||trltetmo
+Samsung|Galaxy S7 Edge Exynos|p||||hero2lte
+Samsung|Galaxy S7 Exynos|p||||herolte
+Samsung|S3 Neo+ (GT-I9301I)|p||||s3ve3g
+Sony|Xperia X (F5121 & F5122)|p||||suzu
+Sony|Xperia X Compact (F5321)|p||||kugo
+Sony|Xperia X Performance (F8131 & F8132)|p||||dora
+Sony|Xperia XZ (F8331 & F8332)|p||||kagura
+Sony|Xperia Z4 Tablet4 (SGP771)|p||||karin
+Volla|Phone|p||||yggdrasil
+Volla|Phone 22|p||||mimameid_h12
+Volla|Phone Plinius|p||||ansuz
+Volla|Phone Quintus|p||||algiz
+Volla|Phone X|p||||yggdrasilx
+Volla|Phone X23|p||||vidofnir_esim
+Volla|Tablet|t||||mimir
+Xiaomi|3/4|p||||cancro
+Xiaomi|Mi A2|p||||jasmine_sprout
+Xiaomi|Poco M3|p||||citrus
+Xiaomi|Redmi 3S 3X 3SP|p||||land
+Xiaomi|Redmi 4X|p||||santoni
+Xiaomi|Redmi Note 7|p||||lavender
+Xiaomi|Redmi Note 8 Pro|p||||begonia
+Xiaomi|Redmi Note 9|p||||merlin`;
+var DEV=RAW.trim().split('\n').map(function(l){var p=l.trim().split('|');return {brand:p[0],model:p[1],type:p[2]==='t'?'Планшет':'Телефон',codename:p[3]||'',models:p[4]||'',branch:p[5]||'',ut:p[6]||''};});
+
+var TR={'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'sh','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'};
+var ALIAS={syaomi:'xiaomi',ksiomi:'xiaomi',ksiaomi:'xiaomi',siaomi:'xiaomi',xiaomi:'xiaomi',huavey:'huawei',huavei:'huawei',gugl:'google',piksel:'pixel',ayfon:'iphone',aypad:'ipad',galaksi:'galaxy',gelaksi:'galaxy',realmi:'realme',poko:'poco',noting:'nothing',soni:'sony',eksperiya:'xperia',plas:'plus',plyus:'plus',van:'one',ultra:'ultra',lineyka:'a'};
+function translit(s){return s.toLowerCase().replace(/[а-яё]/g,function(c){var v=TR[c];return v===undefined?'':v;});}
+function norm(s,isQuery){
+  var t=translit(s).replace(/[^a-z0-9]+/g,' ');
+  t=t.replace(/([a-z])\1+/g,'$1').replace(/([a-z])(\d)/g,'$1 $2').replace(/(\d)([a-z])/g,'$1 $2');
+  var a=t.trim().split(/\s+/).filter(Boolean);
+  if(isQuery){a=a.map(function(x,i){if(x==='d'&&i>0&&/^\d+$/.test(a[i-1]))return 'g';return ALIAS[x]||x;});}
+  return a;
+}
+DEV.forEach(function(d,i){d.idx=i;d.nt=norm(d.brand+' '+d.model,false).length;d.tokens=norm(d.brand+' '+d.model+' '+d.models+(d.brand==='OnePlus'?' one plus':''),false);});
+function lev(a,b){var m=a.length,n=b.length,d=[],i,j;for(i=0;i<=m;i++){d[i]=[i];}for(j=1;j<=n;j++){d[0][j]=j;}
+  for(i=1;i<=m;i++){for(j=1;j<=n;j++){d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a.charAt(i-1)===b.charAt(j-1)?0:1));}}return d[m][n];}
+function ts(q,t){
+  if(q===t)return 1;
+  if(/^\d+$/.test(q)||/^\d+$/.test(t)||q.length<3)return 0;
+  if(t.indexOf(q)===0)return 0.85;
+  var l=lev(q,t);
+  if(l<=1&&t.length>=4)return 0.7;
+  if(l<=2&&t.length>=6)return 0.5;
+  return 0;
+}
+function search(query,n){
+  if(query.trim().length<2)return [];
+  var q=norm(query,true);
+  if(!q.length)return [];
+  var out=[];
+  DEV.forEach(function(d){
+    if(d.type!==mode)return;var s=0;
+    q.forEach(function(x){var b=0;d.tokens.forEach(function(t){var v=ts(x,t);if(v>b)b=v;});s+=b;});
+    var cov=s/q.length;
+    if(cov>=0.45){out.push({d:d,score:cov-0.01*Math.max(0,d.nt-q.length)});}
+  });
+  out.sort(function(a,b){return b.score-a.score;});
+  return out.slice(0,n||6);
+}
+
+var TIPS={
+ 'Samsung':'У Samsung прошивка идёт не через fastboot, а через режим Download (Odin или Heimdall). Сначала включите «Разблокировка OEM» в настройках для разработчиков. После разблокировки данные сотрутся, гарантия и защита Knox пропадут. У части версий, например операторских в США, загрузчик закрыт.',
+ 'Xiaomi':'Xiaomi, Redmi и POCO разблокируются через официальную программу Mi Unlock. Нужен аккаунт Mi, привязанный к телефону, и ожидание, которое часто занимает несколько дней.',
+ 'Google':'На Pixel всё просто: включите «Разблокировка OEM» и выполните команду ниже в режиме fastboot. Данные при этом сотрутся.',
+ 'OnePlus':'Включите «Разблокировка OEM» и выполните fastboot flashing unlock (на старых моделях fastboot oem unlock). Данные сотрутся.',
+ 'Huawei':'Huawei перестал выдавать коды разблокировки загрузчика в 2018 году, поэтому прошить такое устройство почти невозможно.',
+ 'Honor':'Honor, как и Huawei, давно не выдаёт коды разблокировки, поэтому прошить такое устройство почти невозможно.',
+ 'Motorola':'Код разблокировки запрашивается на официальном сайте Motorola, после этого выполняется fastboot oem unlock с этим кодом.',
+ 'Sony':'Код разблокировки запрашивается в разделе Open Devices на сайте Sony для разработчиков. Не все модели и регионы поддерживаются.',
+ 'Fairphone':'Fairphone официально разрешает разблокировку загрузчика и даёт код на своём сайте.',
+ 'Amazon':'У планшетов Fire загрузчик обычно закрыт. Способы зависят от модели, ищите страницу своей модели на форуме XDA.',
+ 'Realme':'Процедура зависит от модели и региона, у части устройств загрузчик закрыт. Уточните на странице своей модели.',
+ 'Oppo':'Процедура зависит от модели и региона, у части устройств загрузчик закрыт. Уточните на странице своей модели.',
+ 'Vivo':'Процедура зависит от модели и региона, у части устройств загрузчик закрыт. Уточните на странице своей модели.'
+};
+var GENERIC='Включите режим разработчика и «Разблокировка OEM», затем выполните команду ниже в режиме fastboot. Данные сотрутся. На некоторых моделях загрузчик закрыт совсем.';
+
+function link(h,t){return '<a class="go" href="'+h+'" target="_blank" rel="noopener">'+t+'</a>';}
+function item(t,d,h,l){return '<div class="row"><div><h3>'+t+'</h3><p>'+d+'</p></div>'+link(h,l)+'</div>';}
+function cmd(label,text){return '<div class="cmd"><div><small>'+label+'</small><code>'+text+'</code></div><button class="copy" type="button" data-copy="1">Копировать</button></div>';}
+function how(arr){return '<ol class="how">'+arr.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ol>';}
+var WARN='<p class="note">Разблокировка загрузчика стирает все данные, может снять гарантию и сломать часть банковских приложений. Заранее сделайте копию нужного.</p>';
+
+function similar(d){return search(d.brand+' '+d.model,14).filter(function(r){return r.d.codename&&r.d!==d;}).slice(0,3).map(function(r){return r.d;});}
+function losRows(d){
+  if(d.codename){
+    var c=encodeURIComponent(d.codename);
+    if(parseFloat(d.branch)<20){return item('LineageOS: инструкция','Для этой модели последняя ветка LineageOS '+d.branch+', она устаревшая. Страница покажет, какие версии и файлы ещё доступны.','https://wiki.lineageos.org/devices/'+c,'Открыть');}
+    return item('LineageOS: скачать','Сборка для вашей модели ('+d.codename+'), актуальная ветка LineageOS '+d.branch+'. Откроется страница загрузки.','https://download.lineageos.org/devices/'+c+'/builds','Скачать')
+      +item('LineageOS: инструкция','Пошаговая установка именно для вашей модели.','https://wiki.lineageos.org/devices/'+c,'Открыть');
+  }
+  var r=item('LineageOS','В списке LineageOS вашей модели не нашлось, либо она записана под другим названием. Проверьте вручную.','https://wiki.lineageos.org/devices/','Список');
+  if(d.brand!=='Другое'){
+    similar(d).forEach(function(x){r+='<div class="row"><div><h3>'+x.brand+' '+x.model+'</h3><p>Похожая модель, для неё сборка LineageOS есть.</p></div><button class="chip" type="button" data-pick="'+x.idx+'">Выбрать</button></div>';});
+  }
+  return r;
+}
+function inst(d,os){
+  if(d.brand==='Apple'||d.family==='ios')return '';
+  var r='';
+  var sam=item('Galaxy Flasher','Графическая программа для прошивки Samsung, работает через Heimdall.','https://github.com/ethical-haquer/Galaxy-Flasher','Скачать')
+    +item('Heimdall','Открытая замена Odin для Samsung: Windows, Linux и macOS.','https://github.com/Benjamin-Dobell/Heimdall','Скачать')
+    +item('Thor','Ещё одна замена Odin для Samsung.','https://github.com/Samsung-Loki/thor','Скачать');
+  if(os==='android'){
+    if(d.brand==='Google')r+=item('PixelFlasher','Программа для компьютера: прошивает Pixel в несколько кликов и проверяет образы.','https://github.com/badabing2005/PixelFlasher/releases','Скачать');
+    if(d.brand==='Samsung')r+=sam;
+    r+=item('/e/OS Installer','Веб-установщик /e/OS (Android без сервисов Google): подключаете устройство, он ставит систему. Модель надо проверить по списку.','https://doc.e.foundation/eos-installer','Открыть')
+      +item('Easy Installer','Программа для компьютера от /e/OS, ставит систему сама. Список подходящих устройств есть на форуме проекта.','https://doc.e.foundation/easy-installer','Открыть')
+      +item('Список устройств Easy Installer','Какие модели уже проверены с установщиком.','https://community.e.foundation/t/list-devices-working-with-the-easy-installer/28396','Открыть');
+  }
+  if(os==='linux')r+=item('Droidian','Linux (Debian) для Android-устройств. Список поддерживаемых моделей и установка на сайте проекта.','https://droidian.org/','Открыть');
+  if(os==='boot'){
+    if(d.brand==='Samsung')r+=sam;
+    if(d.brand==='Xiaomi')r+=item('Mi Unlock','Официальная справка Xiaomi по разблокировке загрузчика.','https://www.mi.com/global/support/faq/details/KA-07238/','Открыть');
+    r+=item('Google USB Driver','Драйвер USB для Windows, если компьютер не видит устройство.','https://developer.android.com/studio/run/win-usb','Скачать');
+  }
+  return r?'<div class="label chips-label">Готовые установщики</div><div class="list">'+r+'</div>':'';
+}
+function panelFor(d,os){return panelBase(d,os)+inst(d,os);}
+function panelBase(d,os){
+  var apple=d.brand==='Apple',kind=d.type.toLowerCase();
+  if(os==='android'){
+    var r=losRows(d)
+      +item('/e/OS','Android без сервисов Google. Тоже есть список поддерживаемых моделей.','https://doc.e.foundation/devices','Проверить модель');
+    if(d.brand==='Google'){r+=item('GrapheneOS','Самая защищённая сборка Android, ставится из браузера. Работает только на Pixel.','https://grapheneos.org/install/web','Установка')+item('Android Flash Tool','Официальный веб-прошивальщик Google для Pixel: ставит заводскую прошивку из браузера.','https://flash.android.com/','Открыть');}
+    return '<div class="list">'+r+'</div>'+how(['Проверьте модель в списке прошивки.','Разблокируйте загрузчик (вкладка «Загрузчик и инструменты»).','Скачайте образ и recovery именно для своей модели.','Прошейте по инструкции со страницы модели.'])+WARN;
+  }
+  if(os==='linux'&&apple){
+    return '<div class="list">'+item('iSH','Терминал Linux (Alpine) прямо на iPhone и iPad. Ставится из App Store, прошивка не нужна.','https://ish.app/','Сайт')
+      +item('UTM SE','Запускает Linux в эмуляторе. Работает медленно, зато без взлома.','https://mac.getutm.app/','Сайт')+'</div><p class="note">Заменить iOS на Linux на iPhone и iPad нельзя, поэтому остаются только эти варианты.</p>';
+  }
+  if(os==='windows'&&apple){
+    return '<div class="list">'+item('UTM SE','Запускает Windows в эмуляторе на iPhone и iPad. Очень медленно, подойдёт для простых задач.','https://mac.getutm.app/','Сайт')+'</div><p class="note">Установить Windows вместо iOS нельзя.</p>';
+  }
+  if(os==='windows'){
+    return '<p>Полноценную Windows на телефон или планшет на ARM поставить почти нельзя: нет готовых образов и драйверов. Реальные варианты:</p><div class="list">'
+      +item('Winlator','Запускает Windows-программы и игры на Android. Это не сама система, но для многих задач хватает. Версию смотрите на странице проекта.','https://github.com/brunodev85/winlator','Сайт')
+      +item('Limbo (QEMU)','Эмулятор, в котором можно запустить Windows. Работает очень медленно.','https://github.com/limboemu/limbo','Сайт')
+      +'<div class="row"><div><h3>Планшет на Intel или AMD</h3><p>Если это Surface, Chuwi или другой Windows-планшет, система ставится как на обычный компьютер.</p></div><button class="chip" type="button" data-go="pc">Открыть «Компьютер»</button></div></div>';
+  }
+  if(os==='linux'){
+    var utRows=d.ut?item('Ubuntu Touch для вашей модели','Страница модели: что работает и как ставить.','https://devices.ubuntu-touch.io/device/'+encodeURIComponent(d.ut)+'/','Открыть')+item('UBports Installer','Готовый установщик Ubuntu Touch для компьютера: сам находит устройство и ставит систему.','https://github.com/ubports/ubports-installer/releases/latest','Скачать'):'';
+    return '<div class="list">'+utRows
+      +item('postmarketOS','Настоящий Linux для '+(kind==='планшет'?'планшетов':'телефонов')+'. Найдите модель в списке устройств.','https://wiki.postmarketos.org/wiki/Devices','Проверить модель')
+      +item('Ubuntu Touch','Linux с интерфейсом под сенсорный экран. Есть каталог поддерживаемых устройств.','https://devices.ubuntu-touch.io/','Проверить модель')
+      +item('Termux','Linux без прошивки: ставится как обычное приложение поверх Android. Безопасный вариант, если модели нет в списках.','https://f-droid.org/packages/com.termux/','Скачать')
+      +item('Kali NetHunter','Kali для Android: набор инструментов проверки безопасности. Нужны поддерживаемая модель и root.','https://www.kali.org/get-kali/#kali-mobile','Открыть')
+      +item('Termux:X11','Окно с графическим рабочим столом для Linux внутри Termux.','https://github.com/termux/termux-x11','Сайт')
+      +'</div>'+cmd('Termux: Debian без прошивки','pkg update &amp;&amp; pkg install proot-distro -y &amp;&amp; proot-distro install debian &amp;&amp; proot-distro login debian')+WARN;
+  }
+  if(os==='ios'){
+    if(apple){return '<p>На вашем устройстве уже стоит iOS. Обновить или восстановить её можно через Finder на Mac или приложение Apple Devices на Windows.</p><div class="list">'+item('Поддержка Apple','Официальные инструкции по обновлению и восстановлению.','https://support.apple.com/ru-ru','Открыть')+'</div>';}
+    return '<p class="note">iOS ставится только на устройства Apple. Любые «сборки iOS для Android» это обман или вирус. Если нужен другой вид системы, посмотрите Android-прошивки или Linux.</p>';
+  }
+  var tip=TIPS[d.brand]||GENERIC;var guide=d.codename?item('Инструкция для вашей модели','Разблокировка и установка для '+d.model+' на вики LineageOS.','https://wiki.lineageos.org/devices/'+encodeURIComponent(d.codename),'Открыть'):'';
+  return '<p>'+tip+'</p>'+cmd('Разблокировка загрузчика (fastboot)','fastboot flashing unlock')
+    +'<div class="list">'+guide+item('Platform-tools','Официальные adb и fastboot от Google для Windows, Linux и macOS.','https://developer.android.com/tools/releases/platform-tools','Скачать')
+    +item('TWRP','Recovery для установки прошивок. Найдите свою модель в списке.','https://twrp.me/Devices/','Проверить модель')+'</div>'+WARN;
+}
+
+var q=document.getElementById('q'),sugg=document.getElementById('sugg'),box=document.getElementById('searchbox'),
+    picked=document.getElementById('picked'),pname=document.getElementById('pname'),chips=document.getElementById('chips'),panel=document.getElementById('panel'),
+    cur=null,curOs=null,results=[];
+var OS=[['android','Android'],['linux','Linux'],['boot','Загрузчик и инструменты']];
+var mode='Телефон';
+
+function renderSugg(){
+  results=search(q.value);
+  sugg.innerHTML='';
+  if(q.value.trim().length<2)return;
+  if(!results.length){
+    sugg.innerHTML='<p class="hint">Ничего похожего не нашлось. Попробуйте бренд и номер, например «Xiaomi 13».</p>';
+  } else {
+    var h=document.createElement('p');h.className='hint';h.textContent='Похоже, вы ищете:';sugg.appendChild(h);
+    results.forEach(function(r,i){
+      var b=document.createElement('button');b.type='button';b.className='opt'+(i===0?' best':'');
+      var l=document.createElement('span');l.textContent=r.d.model;
+      var s=document.createElement('small');s.textContent=r.d.brand;l.appendChild(s);
+      var t=document.createElement('span');t.className='tag';t.textContent=r.d.type+(r.d.codename?' · LineageOS':'')+(r.d.ut?' · Ubuntu Touch':'');
+      b.appendChild(l);b.appendChild(t);
+      b.addEventListener('click',function(){pick(r.d);});
+      sugg.appendChild(b);
+    });
+  }
+  var typed=q.value.trim();
+  if(typed.length>=2){
+    var qt=norm(typed,true),bn='Другое';
+    DEV.forEach(function(d){if(bn==='Другое'){var bt=norm(d.brand,false)[0];if(bt&&qt.indexOf(bt)>=0)bn=d.brand;}});
+    var cb=document.createElement('button');cb.type='button';cb.className='opt';
+    var cl=document.createElement('span');cl.textContent=T('custom').replace('%s',typed);
+    var cs=document.createElement('small');cs.textContent=T('customsub');cl.appendChild(cs);cb.appendChild(cl);
+    cb.addEventListener('click',function(){pick({brand:bn,model:typed,family:'android',type:mode,codename:'',models:'',branch:'',ut:'',custom:true});});
+    sugg.appendChild(cb);
+  }
+}
+function fillGeneric(){
+  var g=document.getElementById('generic');g.innerHTML='';
+  var tab=mode==='Планшет';
+  [['Другой Android '+(tab?'планшет':'телефон'),'Linux без прошивки, Windows-программы, общие инструкции',{brand:'Другое',model:'Другой Android',family:'android'}],
+   [tab?'iPad':'iPhone','Linux и Windows в эмуляторе, обновление iOS',{brand:'Apple',model:tab?'iPad':'iPhone',family:'ios'}]].forEach(function(x){
+    var b=document.createElement('button');b.type='button';b.className='opt';
+    var l=document.createElement('span');l.textContent=x[0];var s=document.createElement('small');s.textContent=x[1];l.appendChild(s);b.appendChild(l);
+    b.addEventListener('click',function(){var d=x[2];d.type=mode;d.codename='';d.models='';d.branch='';pick(d);});
+    g.appendChild(b);
+  });
+}
+function osFor(d){
+  if(d.family==='ios'||d.brand==='Apple')return [['ios','iOS'],['linux','Linux'],['windows','Windows']];
+  return [['android','Android'],['linux','Linux'],['windows','Windows'],['boot','Загрузчик и инструменты']];
+}
+function renderChips(){
+  chips.innerHTML='';
+  osFor(cur).forEach(function(x){
+    var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=x[1];
+    b.setAttribute('aria-pressed',curOs===x[0]?'true':'false');
+    b.addEventListener('click',function(){curOs=x[0];renderChips();renderPanel();});
+    chips.appendChild(b);
+  });
+}
+function renderPanel(){
+  showHelp(!!curOs);if(curOs)setStep(4);
+  panel.innerHTML=curOs?panelFor(cur,curOs):'<p class="hint">Выберите, что хотите поставить.</p>';
+}
+function setStep(n){document.querySelectorAll('#wsteps li').forEach(function(li){var s=+li.getAttribute('data-s');li.className=s===n?'on':(s<n?'done':'');});}
+var PREP={
+ Samsung:'Samsung прошивается не через fastboot, а через режим Download (кнопки громкость вверх+вниз и подключение кабеля) и программы Odin или Heimdall. Сначала включите «Разблокировка OEM»: если пункта нет или он серый, загрузчик закрыт и прошить нельзя. После разблокировки данные сотрутся, защита Knox необратимо отключится.',
+ Xiaomi:'У Xiaomi, Redmi и POCO загрузчик открывается через официальную программу Mi Unlock. Нужны аккаунт Mi, привязанный к телефону, и ожидание, которое часто занимает несколько дней.',
+ Google:'На Pixel включите «Разблокировка OEM». Остальное делается из браузера или командой fastboot flashing unlock.',
+ OnePlus:'Включите «Разблокировка OEM». Загрузчик открывается командой fastboot flashing unlock.',
+ Motorola:'Код разблокировки запрашивается на официальном сайте Motorola, затем вводится командой fastboot oem unlock.',
+ Sony:'Код разблокировки запрашивается на сайте Sony для разработчиков (Open Devices). Не все модели и регионы поддерживаются.',
+ Huawei:'Huawei не выдаёт коды разблокировки с 2018 года, поэтому такое устройство почти невозможно прошить.',
+ Honor:'Honor не выдаёт коды разблокировки, поэтому такое устройство почти невозможно прошить.',
+ Fairphone:'Fairphone официально разрешает разблокировку, код выдаётся на их сайте.',
+ Apple:'iPhone и iPad не позволяют поставить другую систему. Здесь можно только обновить или восстановить iOS.'
+};
+function renderPrep(d){
+  var tip=PREP[d.brand]||'Порядок разблокировки загрузчика зависит от производителя. Проверьте страницу своей модели в разделе «Шаг 4».';
+  var tab=d.type==='Планшет';
+  var steps=d.brand==='Apple'?['Зарядите устройство хотя бы до 50%.','Сделайте копию в iCloud или на компьютер.','Подключите кабелем к компьютеру и нажмите «Доверять».']:
+   ['Зарядите '+(tab?'планшет':'телефон')+' хотя бы до 70% и сделайте копию нужных данных: при прошивке всё сотрётся.',
+    'Откройте Настройки → О '+(tab?'планшете':'телефоне')+' и 7 раз нажмите на «Номер сборки», чтобы включить режим разработчика.',
+    'В разделе «Для разработчиков» включите «Отладка по USB» и «Разблокировка OEM».',
+    'На компьютере поставьте драйверы производителя (для Windows) и пакет platform-tools от Google.',
+    'Подключите '+(tab?'планшет':'телефон')+' оригинальным кабелем и разрешите отладку на экране.'];
+  document.getElementById('prep').innerHTML='<div class="label">Шаг 1. Подготовьте устройство</div><ol>'+steps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol><p class="note">'+tip+'</p><div class="label">Шаг 2. Подключите к компьютеру</div><p class="hint">Устройство выбрано. Чтобы убедиться, что компьютер его видит, нажмите «Определить подключённое устройство» в начале страницы: модель должна совпасть.</p>';
+}
+function showHelp(on){
+  var el=document.getElementById('help'),w4=document.getElementById('w4l');
+  el.hidden=!on;w4.hidden=!on;
+  if(on)el.innerHTML='<span class="hint">Нужна помощь?</span><a href="https://xdaforums.com/" target="_blank" rel="noopener">XDA Forums</a><a href="https://4pda.to/forum/" target="_blank" rel="noopener">4PDA</a><a href="https://www.reddit.com/r/LineageOS/" target="_blank" rel="noopener">r/LineageOS</a><a href="https://www.reddit.com/r/postmarketOS/" target="_blank" rel="noopener">r/postmarketOS</a><a href="https://www.reddit.com/r/Android/" target="_blank" rel="noopener">r/Android</a>';
+}
+function pick(d){
+  cur=d;curOs=null;
+  pname.textContent=((d.brand==='Другое'||d.custom)?'':d.brand+' ')+d.model+' ('+d.type.toLowerCase()+')';
+  box.hidden=true;picked.hidden=false;renderPrep(d);renderChips();renderPanel();setStep(3);
+}
+document.getElementById('allbtn').addEventListener('click',function(){
+  q.value='';sugg.innerHTML='';
+  var list=DEV.filter(function(d){return d.type===mode;});
+  var hd=document.createElement('p');hd.className='hint';hd.textContent='Моделей в списке: '+list.length+'. Выберите бренд.';sugg.appendChild(hd);
+  var by={};list.forEach(function(d){(by[d.brand]=by[d.brand]||[]).push(d);});
+  Object.keys(by).sort().forEach(function(br){
+    var det=document.createElement('details');det.className='brand';
+    var sm=document.createElement('summary');sm.textContent=br+' ('+by[br].length+')';det.appendChild(sm);
+    var bx=document.createElement('div');bx.className='sugg';
+    by[br].sort(function(a,b){return a.model.localeCompare(b.model);}).forEach(function(d){
+      var b=document.createElement('button');b.type='button';b.className='opt';
+      var l=document.createElement('span');l.textContent=d.model;
+      var t=document.createElement('span');t.className='tag';t.textContent=(d.codename?'LineageOS '+d.branch:'')+(d.codename&&d.ut?' · ':'')+(d.ut?'Ubuntu Touch':'');
+      b.appendChild(l);b.appendChild(t);b.addEventListener('click',function(){pick(d);});bx.appendChild(b);
+    });
+    det.appendChild(bx);sugg.appendChild(det);
+  });
+});
+q.addEventListener('input',renderSugg);
+q.addEventListener('keydown',function(e){if(e.key==='Enter'&&results.length){e.preventDefault();pick(results[0].d);}});
+document.getElementById('change').addEventListener('click',function(){picked.hidden=true;box.hidden=false;showHelp(false);setStep(1);q.focus();});
+panel.addEventListener('click',function(e){
+  var gp=e.target.closest('[data-go]');if(gp){setMode(gp.getAttribute('data-go'));window.scrollTo(0,0);return;}var pk=e.target.closest('[data-pick]');if(pk){pick(DEV[+pk.getAttribute('data-pick')]);return;}var b=e.target.closest('[data-copy]');if(!b)return;
+  var code=b.parentElement.querySelector('code');
+  function ok(){b.textContent='Скопировано';setTimeout(function(){b.textContent='Копировать';},1600);}
+  function fb(){var r=document.createRange();r.selectNodeContents(code);var s=window.getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Выделено';setTimeout(function(){b.textContent='Копировать';},1600);}
+  try{navigator.clipboard.writeText(code.textContent).then(ok,fb);}catch(err){fb();}
+});
+var tabBtns=document.querySelectorAll('.tab'),finderEl=document.getElementById('finder'),viewPc=document.getElementById('view-pc');
+var viewSec=document.getElementById('view-sec'),viewTools=document.getElementById('view-tools'),curTab='phone';
+function setMode(m){
+  curTab=m;
+  tabBtns.forEach(function(t){t.setAttribute('aria-selected',t.getAttribute('data-mode')===m?'true':'false');});
+  viewPc.hidden=m!=='pc';viewSec.hidden=m!=='sec';viewTools.hidden=m!=='tools';finderEl.hidden=(m==='pc'||m==='sec'||m==='tools');
+  if(m==='pc'||m==='sec'||m==='tools')return;
+  mode=m==='tablet'?'Планшет':'Телефон';
+  heads();
+  picked.hidden=true;box.hidden=false;q.value='';sugg.innerHTML='';cur=null;curOs=null;fillGeneric();setStep(1);showHelp(false);
+}
+tabBtns.forEach(function(t){t.addEventListener('click',function(){setMode(t.getAttribute('data-mode'));});});
+var L={
+kicker:{ru:'Для тех, кто ставит системы',en:'For people who install systems',uk:'Для тих, хто встановлює системи',es:'Para quienes instalan sistemas',de:'Für alle, die Systeme installieren',fr:'Pour ceux qui installent des systèmes',pt:'Para quem instala sistemas',tr:'Sistem kuranlar için',zh:'给安装系统的人',ar:'لمن يثبّتون أنظمة التشغيل',hi:'सिस्टम इंस्टॉल करने वालों के लिए'},
+lead:{ru:'Прошивки для телефонов и планшетов и образы для компьютера. Файлов здесь нет: всё качается с сайтов авторов, поэтому образ чистый, а контрольную сумму можно сверить.',en:"Firmware for phones and tablets and images for computers. No files are stored here: everything downloads from the authors' own sites, so the image is clean and you can verify its checksum.",uk:"Прошивки для телефонів і планшетів та образи для комп'ютера. Файлів тут немає: усе завантажується з сайтів авторів, тому образ чистий, а контрольну суму можна звірити.",es:'Firmware para teléfonos y tabletas e imágenes para ordenadores. Aquí no hay archivos: todo se descarga de los sitios de sus autores, así la imagen es auténtica y puedes comprobar su suma de verificación.',de:'Firmware für Smartphones und Tablets sowie Images für Computer. Hier liegen keine Dateien: Alles wird von den Seiten der Entwickler geladen, das Image ist also unverändert und die Prüfsumme lässt sich vergleichen.',fr:"Firmwares pour téléphones et tablettes, images pour ordinateurs. Aucun fichier n'est hébergé ici : tout se télécharge depuis les sites des auteurs, l'image est donc authentique et sa somme de contrôle vérifiable.",pt:'Firmware para celulares e tablets e imagens para computadores. Não há arquivos aqui: tudo é baixado dos sites dos autores, então a imagem é autêntica e dá para conferir o checksum.',tr:'Telefon ve tabletler için yazılımlar, bilgisayarlar için imajlar. Burada dosya yok: her şey geliştiricilerin kendi sitelerinden iner, imaj orijinaldir ve sağlama toplamını doğrulayabilirsiniz.',zh:'手机和平板的固件，以及电脑系统镜像。这里不存放文件，所有内容都从作者官网下载，镜像可靠，也可以核对校验和。',ar:'برامج ثابتة للهواتف والأجهزة اللوحية وصور أنظمة للحواسيب. لا نحتفظ بأي ملفات هنا: كل شيء يُنزَّل من مواقع مطوّريه، لذا تبقى الصورة سليمة ويمكنك التحقق من المجموع الاختباري.',hi:'फ़ोन और टैबलेट के लिए फ़र्मवेयर और कंप्यूटर के लिए इमेज। यहाँ कोई फ़ाइल नहीं रखी जाती: सब कुछ बनाने वालों की अपनी साइट से डाउनलोड होता है, इसलिए इमेज असली रहती है और चेकसम जाँचा जा सकता है।'},
+quick:{ru:'Быстрое скачивание',en:'Quick downloads',uk:'Швидке завантаження',es:'Descargas rápidas',de:'Schnell herunterladen',fr:'Téléchargements rapides',pt:'Downloads rápidos',tr:'Hızlı indirme',zh:'快速下载',ar:'تنزيل سريع',hi:'त्वरित डाउनलोड'},
+quickhint:{ru:'Кнопки открывают официальные страницы загрузки, файл начинает скачиваться там.',en:'Buttons open the official download pages; the file starts downloading there.',uk:'Кнопки відкривають офіційні сторінки завантаження, файл завантажується там.',es:'Los botones abren las páginas oficiales de descarga; el archivo se descarga allí.',de:'Die Schaltflächen öffnen die offiziellen Download-Seiten, dort startet der Download.',fr:'Les boutons ouvrent les pages de téléchargement officielles ; le fichier se télécharge là-bas.',pt:'Os botões abrem as páginas oficiais de download; o arquivo é baixado lá.',tr:'Düğmeler resmi indirme sayfalarını açar; dosya orada inmeye başlar.',zh:'按钮会打开官方下载页面，文件在那里开始下载。',ar:'تفتح الأزرار صفحات التنزيل الرسمية، ويبدأ التنزيل هناك.',hi:'बटन आधिकारिक डाउनलोड पेज खोलते हैं, फ़ाइल वहीं से डाउनलोड होती है।'},
+t_phone:{ru:'Телефоны',en:'Phones',uk:'Телефони',es:'Teléfonos',de:'Smartphones',fr:'Téléphones',pt:'Celulares',tr:'Telefonlar',zh:'手机',ar:'الهواتف',hi:'फ़ोन'},
+t_tablet:{ru:'Планшеты',en:'Tablets',uk:'Планшети',es:'Tabletas',de:'Tablets',fr:'Tablettes',pt:'Tablets',tr:'Tabletler',zh:'平板',ar:'الأجهزة اللوحية',hi:'टैबलेट'},
+t_pc:{ru:'Компьютер',en:'Computer',uk:"Комп'ютер",es:'Ordenador',de:'Computer',fr:'Ordinateur',pt:'Computador',tr:'Bilgisayar',zh:'电脑',ar:'الحاسوب',hi:'कंप्यूटर'},
+t_sec:{ru:'Безопасность',en:'Security',uk:'Безпека',es:'Seguridad',de:'Sicherheit',fr:'Sécurité',pt:'Segurança',tr:'Güvenlik',zh:'安全',ar:'الأمان',hi:'सुरक्षा'},
+h_phone:{ru:'Прошивка для телефона',en:'Firmware for your phone',uk:'Прошивка для телефона',es:'Firmware para tu teléfono',de:'Firmware für dein Smartphone',fr:'Firmware pour votre téléphone',pt:'Firmware para seu celular',tr:'Telefonunuz için yazılım',zh:'手机固件',ar:'برنامج ثابت للهاتف',hi:'फ़ोन के लिए फ़र्मवेयर'},
+h_tablet:{ru:'Прошивка для планшета',en:'Firmware for your tablet',uk:'Прошивка для планшета',es:'Firmware para tu tableta',de:'Firmware für dein Tablet',fr:'Firmware pour votre tablette',pt:'Firmware para seu tablet',tr:'Tabletiniz için yazılım',zh:'平板固件',ar:'برنامج ثابت للجهاز اللوحي',hi:'टैबलेट के लिए फ़र्मवेयर'},
+p:{ru:'Введите модель как удобно, хоть по-русски: %s.',en:'Type the model any way you like: %s.',uk:'Введіть модель як зручно: %s.',es:'Escribe el modelo como quieras: %s.',de:'Gib das Modell beliebig ein: %s.',fr:'Saisissez le modèle comme vous voulez : %s.',pt:'Digite o modelo como preferir: %s.',tr:'Modeli istediğiniz gibi yazın: %s.',zh:'随意输入型号，例如 %s。',ar:'اكتب الطراز كما تشاء: %s.',hi:'मॉडल जैसे चाहें लिखें: %s।'},
+ph:{ru:'Например: %s',en:'e.g. %s',uk:'Напр.: %s',es:'p. ej. %s',de:'z. B. %s',fr:'ex. : %s',pt:'ex.: %s',tr:'örn. %s',zh:'例如：%s',ar:'مثال: %s',hi:'उदा.: %s'},
+model:{ru:'Модель',en:'Model',uk:'Модель',es:'Modelo',de:'Modell',fr:'Modèle',pt:'Modelo',tr:'Model',zh:'型号',ar:'الطراز',hi:'मॉडल'},
+showall:{ru:'Показать все модели',en:'Show all models',uk:'Показати всі моделі',es:'Mostrar todos los modelos',de:'Alle Modelle anzeigen',fr:'Afficher tous les modèles',pt:'Mostrar todos os modelos',tr:'Tüm modelleri göster',zh:'显示所有型号',ar:'عرض كل الطرازات',hi:'सभी मॉडल दिखाएँ'},
+notinlist:{ru:'Нет вашей модели в списке',en:"Your model isn't listed",uk:'Вашої моделі немає в списку',es:'Tu modelo no aparece en la lista',de:'Dein Modell fehlt in der Liste',fr:"Votre modèle n'est pas dans la liste",pt:'Seu modelo não está na lista',tr:'Modeliniz listede yok',zh:'列表里没有你的型号',ar:'طرازك غير موجود في القائمة',hi:'आपका मॉडल सूची में नहीं है'},
+detect:{ru:'Определить подключённое устройство',en:'Detect connected device',uk:'Визначити підключений пристрій',es:'Detectar dispositivo conectado',de:'Angeschlossenes Gerät erkennen',fr:"Détecter l'appareil branché",pt:'Detectar dispositivo conectado',tr:'Bağlı cihazı algıla',zh:'检测已连接设备',ar:'اكتشاف الجهاز المتصل',hi:'जुड़ा डिवाइस पहचानें'},
+d_wait:{ru:'Выберите устройство в окне браузера…',en:'Choose the device in the browser window…'},
+d_found:{ru:'Найдено: ',en:'Found: '},
+d_part:{ru:'Точную модель определить не удалось: в обычном режиме Android скрывает её. Выключите устройство и загрузите его в режим fastboot (обычно кнопки питания и громкости вниз), затем нажмите кнопку ещё раз. Пока можно выбрать модель вручную.',en:'Could not read the exact model: Android hides it in normal mode. Power the device off and boot it into fastboot mode (usually power + volume down), then press the button again. You can also pick the model manually.'},
+d_none:{ru:'Устройство не выбрано или не подключено. Подключите его кабелем и включите в телефоне отладку по USB.',en:'No device selected or connected. Plug it in with a cable and enable USB debugging on the phone.'},
+d_unsup:{ru:'Определение работает в Chrome и Edge на компьютере и в Chrome на Android. Выберите модель вручную.',en:'Detection works in Chrome and Edge on desktop and in Chrome on Android. Pick the model manually.'}
+};
+L.w1={ru:'Подготовьте',en:'Prepare',uk:'Підготуйте',es:'Prepara',de:'Vorbereiten',fr:'Préparez',pt:'Prepare',tr:'Hazırla',zh:'准备',ar:'التحضير',hi:'तैयारी'};
+L.w2={ru:'Подключите',en:'Connect',uk:'Підключіть',es:'Conecta',de:'Verbinden',fr:'Branchez',pt:'Conecte',tr:'Bağla',zh:'连接',ar:'التوصيل',hi:'कनेक्ट'};
+L.w3={ru:'Выберите',en:'Choose',uk:'Оберіть',es:'Elige',de:'Wählen',fr:'Choisissez',pt:'Escolha',tr:'Seç',zh:'选择',ar:'الاختيار',hi:'चुनें'};
+L.w4={ru:'Прошейте',en:'Flash',uk:'Прошийте',es:'Flashea',de:'Flashen',fr:'Flashez',pt:'Grave',tr:'Yükle',zh:'刷机',ar:'التثبيت',hi:'फ़्लैश'};
+L.w3l={ru:'Шаг 3. Выберите, что поставить',en:'Step 3. Choose what to install',uk:'Крок 3. Оберіть, що встановити',es:'Paso 3. Elige qué instalar',de:'Schritt 3. Wähle, was installiert wird',fr:'Étape 3. Choisissez quoi installer',pt:'Passo 3. Escolha o que instalar',tr:'Adım 3. Neyi kuracağınızı seçin',zh:'第 3 步：选择要安装的系统',ar:'الخطوة 3: اختر ما تريد تثبيته',hi:'चरण 3. चुनें क्या इंस्टॉल करना है'};
+L.w4l={ru:'Шаг 4. Прошивка',en:'Step 4. Flashing',uk:'Крок 4. Прошивка',es:'Paso 4. Flasheo',de:'Schritt 4. Flashen',fr:'Étape 4. Flashage',pt:'Passo 4. Gravação',tr:'Adım 4. Yükleme',zh:'第 4 步：刷机',ar:'الخطوة 4: التثبيت',hi:'चरण 4. फ़्लैशिंग'};
+L.custom={ru:'Использовать «%s» как мою модель',en:'Use “%s” as my model',uk:'Використати «%s» як мою модель',es:'Usar «%s» como mi modelo',de:'„%s“ als mein Modell verwenden',fr:'Utiliser « %s » comme mon modèle',pt:'Usar “%s” como meu modelo',tr:'“%s” modelini kullan',zh:'将“%s”作为我的型号',ar:'استخدام «%s» كطرازي',hi:'“%s” को मेरा मॉडल मानें'};
+L.customsub={ru:'Готовой прошивки для неё в каталоге нет. Покажем Linux без прошивки, подготовку и инструкции для вашей марки.',en:"No ready-made firmware for it in the catalog. We'll show Linux without flashing, preparation and instructions for your brand."};
+L.d_notools={ru:'На компьютере не найдены adb и fastboot. Нажмите «Установить adb и fastboot»: приложение скачает официальный пакет Google.',en:'adb and fastboot were not found on this computer. Press “Install adb and fastboot”: the app will download the official Google package.'};
+L.d_unauthorized={ru:'Устройство подключено, но отладка не разрешена. Подтвердите запрос на экране устройства и нажмите кнопку ещё раз.',en:'The device is connected but debugging is not allowed. Confirm the prompt on the device screen and press the button again.'};
+L.d_nodevice={ru:'Устройство не найдено. Подключите его кабелем, включите «Отладку по USB» или загрузите в режим fastboot.',en:'No device found. Plug it in with a cable, enable USB debugging or boot it into fastboot mode.'};
+L.d_installing={ru:'Скачиваю официальный пакет platform-tools от Google…',en:'Downloading the official platform-tools package from Google…'};
+L.d_installed={ru:'Готово. Подключите устройство и нажмите «Определить подключённое устройство».',en:'Done. Connect the device and press “Detect connected device”.'};
+L.d_installfail={ru:'Не удалось скачать пакет. Проверьте интернет или скачайте platform-tools вручную с developer.android.com.',en:'Could not download the package. Check your internet or download platform-tools manually from developer.android.com.'};
+L.instbtn={ru:'Установить adb и fastboot',en:'Install adb and fastboot',uk:'Встановити adb і fastboot',es:'Instalar adb y fastboot',de:'adb und fastboot installieren',fr:'Installer adb et fastboot',pt:'Instalar adb e fastboot',tr:'adb ve fastboot kur',zh:'安装 adb 和 fastboot',ar:'تثبيت adb وfastboot',hi:'adb और fastboot इंस्टॉल करें'};
+L.t_tools={ru:'Инструменты',en:'Tools',uk:'Інструменти',es:'Herramientas',de:'Werkzeuge',fr:'Outils',pt:'Ferramentas',tr:'Araçlar',zh:'工具',ar:'الأدوات',hi:'टूल्स'};
+var lang='ru';
+function T(k){var o=L[k]||{};return o[lang]||o.en||o.ru||k;}
+function exs(tab){
+  if(lang==='ru')return tab?'«галакси таб s7», «pixel tablet»':'«самсунг s22», «сяоми 13», «pixel 8»';
+  if(lang==='uk')return tab?'«галакси таб s7», «pixel tablet»':'«самсунг s22», «сяомі 13», «pixel 8»';
+  return tab?'“galaxy tab s7”, “pixel tablet”':'“samsung s22”, “xiaomi 13”, “pixel 8”';
+}
+function heads(){
+  if(curTab!=='phone'&&curTab!=='tablet')return;
+  var tab=curTab==='tablet';
+  document.getElementById('fh').textContent=T(tab?'h_tablet':'h_phone');
+  document.getElementById('fp').textContent=T('p').replace('%s',exs(tab));
+  var e=lang==='ru'?(tab?'галакси таб s7':'самсунг s22'):lang==='uk'?(tab?'галакси таб s7':'самсунг s22'):(tab?'galaxy tab s7':'samsung s22');
+  q.placeholder=T('ph').replace('%s',e);
+}
+function applyLang(l){
+  lang=L.kicker[l]?l:'ru';
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(function(el){el.textContent=T(el.getAttribute('data-i18n'));});
+  heads();
+  try{localStorage.setItem('flashka-lang',lang);}catch(e){}
+}
+
+var VID={0x04e8:'Samsung',0x18d1:'Google',0x2717:'Xiaomi',0x2a70:'OnePlus',0x22b8:'Motorola',0x0bb4:'HTC',0x12d1:'Huawei',0x0fce:'Sony',0x1004:'LG',0x0b05:'Asus',0x2d95:'Vivo',0x22d9:'Oppo',0x2a45:'Meizu',0x1949:'Amazon',0x2e04:'Nokia',0x05ac:'Apple'};
+function dmsg(t){document.getElementById('detectmsg').textContent=t;}
+async function fastbootProduct(dev){
+  await dev.open();
+  if(dev.configuration===null)await dev.selectConfiguration(1);
+  var ifc=null,inEp=0,outEp=0;
+  dev.configuration.interfaces.forEach(function(i){i.alternates.forEach(function(a){
+    if(a.interfaceClass===0xff&&a.interfaceSubclass===0x42&&a.interfaceProtocol===0x03){
+      ifc=i.interfaceNumber;
+      a.endpoints.forEach(function(e){if(e.type==='bulk'){if(e.direction==='in')inEp=e.endpointNumber;else outEp=e.endpointNumber;}});
+    }});});
+  if(ifc===null)return null;
+  await dev.claimInterface(ifc);
+  try{
+    await dev.transferOut(outEp,new TextEncoder().encode('getvar:product'));
+    for(var k=0;k<4;k++){
+      var r=await dev.transferIn(inEp,256);var s=new TextDecoder().decode(r.data);
+      if(s.indexOf('OKAY')===0)return s.slice(4).trim();
+      if(s.indexOf('INFO')!==0)return null;
+    }
+    return null;
+  }finally{try{await dev.releaseInterface(ifc);}catch(e){}}
+}
+async function desktopDetect(){
+  dmsg(T('d_wait'));
+  var r;
+  try{r=await window.flashka.detect();}catch(e){dmsg(T('d_nodevice'));return;}
+  if(r&&r.error){dmsg(T('d_'+r.error));return;}
+  var brand=(r.brand||'').replace(/^./,function(c){return c.toUpperCase();}),code=(r.device||'').toLowerCase(),model=(r.model||'').toUpperCase().replace(/_/g,'-'),match=null;
+  DEV.forEach(function(d){
+    if(match)return;
+    if(code&&((d.codename&&d.codename.toLowerCase()===code)||(d.ut&&d.ut.toLowerCase()===code))){match=d;return;}
+    if(model&&d.models&&(' '+d.models.toUpperCase()+' ').indexOf(' '+model+' ')>=0)match=d;
+  });
+  if(match){
+    var want=match.type==='Планшет'?'tablet':'phone';
+    if(curTab!==want)setMode(want);
+    pick(match);dmsg(T('d_found')+match.brand+' '+match.model);return;
+  }
+  setMode(curTab==='tablet'?'tablet':'phone');
+  q.value=(brand+' '+(r.model||r.device||'')).trim();renderSugg();
+  dmsg(T('d_found')+q.value+'. ');
+}
+async function detect(){
+  if(window.flashka&&window.flashka.detect){return desktopDetect();}
+  if(!navigator.usb){dmsg(T('d_unsup'));return;}
+  dmsg(T('d_wait'));
+  var dev;
+  try{
+    dev=await navigator.usb.requestDevice({filters:[{classCode:0xff,subclassCode:0x42,protocolCode:1},{classCode:0xff,subclassCode:0x42,protocolCode:3},{vendorId:0x05ac}]});
+  }catch(e){dmsg(T('d_none'));return;}
+  var brand=VID[dev.vendorId]||'',name=dev.productName||'',prod=null;
+  if(dev.vendorId===0x05ac){
+    var tabl=/ipad/i.test(name);
+    setMode(tabl?'tablet':'phone');
+    pick({brand:'Apple',model:tabl?'iPad':'iPhone',family:'ios',type:mode,codename:'',models:'',branch:'',ut:''});
+    dmsg(T('d_found')+(name||'Apple'));return;
+  }
+  try{prod=await fastbootProduct(dev);}catch(e){prod=null;}
+  try{await dev.close();}catch(e){}
+  var low=prod?prod.toLowerCase():'',match=null;
+  if(low){DEV.forEach(function(d){if(!match&&((d.codename&&d.codename.toLowerCase()===low)||(d.ut&&d.ut.toLowerCase()===low)))match=d;});}
+  if(match){
+    var want=match.type==='Планшет'?'tablet':'phone';
+    if(curTab!==want)setMode(want);
+    pick(match);dmsg(T('d_found')+match.brand+' '+match.model);return;
+  }
+  setMode(curTab==='tablet'?'tablet':'phone');
+  q.value=(brand+' '+(prod||name)).trim();renderSugg();
+  dmsg((prod||name?T('d_found')+(brand+' '+(prod||name)).trim()+'. ':'')+T('d_part'));
+}
+document.getElementById('detect').addEventListener('click',detect);
+if(window.flashka&&window.flashka.installTools){
+  var ib=document.getElementById('instTools');ib.hidden=false;
+  ib.addEventListener('click',async function(){
+    dmsg(T('d_installing'));
+    try{var r=await window.flashka.installTools();dmsg(r&&r.ok?T('d_installed'):T('d_installfail'));}catch(e){dmsg(T('d_installfail'));}
+  });
+}else if(!navigator.usb){dmsg(T('d_unsup'));}
+
+
+function Sha256(){
+  var K=new Uint32Array([0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+  var H=new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  var buf=new Uint8Array(64),bl=0,total=0,w=new Uint32Array(64);
+  function ror(x,n){return (x>>>n)|(x<<(32-n));}
+  function block(b,o){
+    var i,s0,s1,a=H[0],bb=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],hh=H[7],t1,t2;
+    for(i=0;i<16;i++){w[i]=(b[o+4*i]<<24)|(b[o+4*i+1]<<16)|(b[o+4*i+2]<<8)|b[o+4*i+3];}
+    for(i=16;i<64;i++){
+      s0=ror(w[i-15],7)^ror(w[i-15],18)^(w[i-15]>>>3);
+      s1=ror(w[i-2],17)^ror(w[i-2],19)^(w[i-2]>>>10);
+      w[i]=(w[i-16]+s0+w[i-7]+s1)|0;
+    }
+    for(i=0;i<64;i++){
+      t1=(hh+(ror(e,6)^ror(e,11)^ror(e,25))+((e&f)^(~e&g))+K[i]+w[i])|0;
+      t2=((ror(a,2)^ror(a,13)^ror(a,22))+((a&bb)^(a&c)^(bb&c)))|0;
+      hh=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;
+    }
+    H[0]=(H[0]+a)|0;H[1]=(H[1]+bb)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+hh)|0;
+  }
+  this.update=function(data){
+    var i=0,n=data.length;total+=n;
+    if(bl){while(i<n&&bl<64)buf[bl++]=data[i++];if(bl===64){block(buf,0);bl=0;}}
+    for(;i+64<=n;i+=64)block(data,i);
+    while(i<n)buf[bl++]=data[i++];
+  };
+  this.hex=function(){
+    buf[bl++]=0x80;
+    if(bl>56){while(bl<64)buf[bl++]=0;block(buf,0);bl=0;}
+    while(bl<56)buf[bl++]=0;
+    var hi=Math.floor(total/0x20000000),lo=(total<<3)>>>0,k;
+    for(k=0;k<4;k++){buf[56+k]=(hi>>>(24-8*k))&255;buf[60+k]=(lo>>>(24-8*k))&255;}
+    block(buf,0);
+    var out='';for(k=0;k<8;k++){out+=('00000000'+(H[k]>>>0).toString(16)).slice(-8);}
+    return out;
+  };
+}
+var hfile=document.getElementById('hfile'),hexp=document.getElementById('hexp'),hres=document.getElementById('hres'),hbar=document.getElementById('hbar'),hbarIn=document.getElementById('hbar-in'),hout=document.getElementById('hout'),hcode=document.getElementById('hcode'),hdone='',hbusy=0;
+function hcompare(){
+  if(!hdone)return;
+  var ex=hexp.value.trim().toLowerCase().replace(/^sha-?256[:=\s]*/,'').replace(/\s+/g,'');
+  if(!ex){hres.textContent='Сумма посчитана. Вставьте ожидаемую выше, чтобы сравнить.';return;}
+  hres.textContent=ex===hdone?'Совпадает: файл не повреждён и не подменён.':'НЕ совпадает: скачайте файл заново и проверьте, что взяли сумму именно для этого файла.';
+}
+async function hashFile(file){
+  var id=++hbusy;hdone='';hout.hidden=true;hbar.hidden=false;hbarIn.style.width='0';hres.textContent='Считаю…';
+  var sha=new Sha256(),CH=8*1024*1024,pos=0;
+  try{
+    while(pos<file.size){
+      if(id!==hbusy)return;
+      var buf=new Uint8Array(await file.slice(pos,pos+CH).arrayBuffer());
+      sha.update(buf);pos+=buf.length;
+      hbarIn.style.width=Math.floor(pos/file.size*100)+'%';
+      hres.textContent='Считаю… '+Math.floor(pos/file.size*100)+'%';
+      await new Promise(function(r){setTimeout(r,0);});
+    }
+    if(id!==hbusy)return;
+    hdone=sha.hex();hcode.textContent=hdone;hout.hidden=false;hbarIn.style.width='100%';hcompare();
+  }catch(e){hres.textContent='Не удалось прочитать файл. Попробуйте выбрать его ещё раз.';}
+}
+hfile.addEventListener('change',function(){if(hfile.files&&hfile.files[0])hashFile(hfile.files[0]);});
+hexp.addEventListener('input',hcompare);
+var CK='flashka-check',ckSaved={};
+try{ckSaved=JSON.parse(localStorage.getItem(CK)||'{}')||{};}catch(e){ckSaved={};}
+document.querySelectorAll('#chklist input[data-ck]').forEach(function(i){
+  i.checked=!!ckSaved[i.getAttribute('data-ck')];
+  i.addEventListener('change',function(){ckSaved[i.getAttribute('data-ck')]=i.checked;try{localStorage.setItem(CK,JSON.stringify(ckSaved));}catch(e){}});
+});
+
+var sel=document.getElementById('lang'),sv=null;
+try{sv=localStorage.getItem('flashka-lang');}catch(e){}
+var nav=(navigator.language||'ru').slice(0,2);
+var start=sv||(L.kicker[nav]?nav:'ru');
+sel.value=L.kicker[start]?start:'ru';applyLang(sel.value);
+sel.addEventListener('change',function(){applyLang(sel.value);});
+setMode('phone');
+document.querySelectorAll('[data-scroll]').forEach(function(b){b.addEventListener('click',function(){var t=document.getElementById(b.getAttribute('data-scroll'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});});
+})();
+</script>
+
+</body>
+</html>
