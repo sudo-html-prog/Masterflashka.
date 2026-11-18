@@ -26,7 +26,7 @@
 
 ## Автор
 
-sudo_flash × Claude
+sudo-html-prog × Claude
 
 ## Лицензия
 
